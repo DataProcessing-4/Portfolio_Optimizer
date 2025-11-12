@@ -8,7 +8,8 @@ test: 테스트 코드, 리펙토링 테스트 코드 추가
 chore: 설정 추가
 
 ## MVC 패턴
-'''
+```
+
 C:\dev\Portfolio_Optimizer\Portfolio_Optimizer\
 ├── app\src\main\
 │   ├── java\com\portfoliolab\
@@ -81,4 +82,5 @@ C:\dev\Portfolio_Optimizer\Portfolio_Optimizer\
 │       └── database\
 │           ├── schema.sql
 │           └── data.sql
-'''
+
+```
