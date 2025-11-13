@@ -4,40 +4,7 @@
 -- 데이터베이스 생성
 
 
-DROP VIEW IF EXISTS daily_returns;
 
--- =================================================
--- 2. 외래키 종속성 순서에 따른 테이블 삭제
--- =================================================
-
--- 단계 1: 가장 하위 종속 테이블들 (다른 테이블을 참조하는 테이블)
-DROP TABLE IF EXISTS analysis_history;
-DROP TABLE IF EXISTS optimal_portfolio;
-DROP TABLE IF EXISTS efficient_frontier;
-DROP TABLE IF EXISTS correlation_analysis;
-DROP TABLE IF EXISTS user_selected_assets;
-DROP TABLE IF EXISTS multifactor_screening;
-DROP TABLE IF EXISTS portfolio_settings;
-
--- 단계 2: 주가 데이터 테이블
-DROP TABLE IF EXISTS stock_price;
-
--- 단계 3: 용어 사전 테이블들
-DROP TABLE IF EXISTS stock_term;
-DROP TABLE IF EXISTS stock_term_category;
-
--- 단계 4: 세션 관리 테이블
-DROP TABLE IF EXISTS user_session;
-
--- 단계 5: 메인 주식 데이터 테이블
-DROP TABLE IF EXISTS stock;
-
--- =================================================
--- 3. 데이터베이스 완전 삭제 (선택사항)
--- =================================================
-
--- 주의: 아래 주석을 해제하면 데이터베이스 전체가 삭제됩니다!
--- DROP DATABASE IF EXISTS portfolio_analysis;
 
 -- =================================================
 -- 4. 삭제 확인 메시지
@@ -45,8 +12,6 @@ DROP TABLE IF EXISTS stock;
 
 SELECT 'All tables have been dropped successfully!' as status;
 SELECT 'Database schema has been reset.' as message;
-
-
 
 CREATE DATABASE IF NOT EXISTS portfolio_analysis 
 CHARACTER SET utf8mb4 
@@ -101,20 +66,20 @@ CREATE TABLE stock (
 ) ENGINE=InnoDB COMMENT='교수님 제공 재무데이터 + 정적 주가정보 통합 저장';
 
 -- 2. 일별 주가 데이터 테이블 (포트폴리오 최적화 구현 시에만 사용)
-CREATE TABLE stock_price (
-    price_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '주가 ID',
-    ticker VARCHAR(10) NOT NULL COMMENT '티커 심볼',
-    price_date DATE NOT NULL COMMENT '가격 일자',
-    close_price DECIMAL(10,2) NOT NULL COMMENT '종가',
-    volume BIGINT COMMENT '거래량',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
-    
-    UNIQUE KEY uk_ticker_date (ticker, price_date),
-    INDEX idx_price_date (price_date),
-    INDEX idx_ticker (ticker),
-    
-    FOREIGN KEY (ticker) REFERENCES stock(ticker) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='상관관계분석/포트폴리오최적화 구현시 외부API에서 수집하는 일별 데이터 (선택적 구현)';
+CREATE TABLE `stock_price` (
+  `ticker` varchar(10) NOT NULL,
+  `price_date` date NOT NULL,
+  `open_price` decimal(12,2) DEFAULT NULL,
+  `high_price` decimal(12,2) DEFAULT NULL,
+  `low_price` decimal(12,2) DEFAULT NULL,
+  `close_price` decimal(12,2) NOT NULL,
+  `volume` bigint DEFAULT NULL,
+  `shares_outstanding` bigint DEFAULT NULL,
+  `market_cap` bigint DEFAULT NULL,
+  `daily_return` decimal(9,6) DEFAULT NULL,
+  PRIMARY KEY (`ticker`,`price_date`),
+  KEY `idx_stock_price_date` (`price_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 3. 사용자 세션 관리 테이블
 CREATE TABLE user_session (
