@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.app.domain.session.mapper.SessionMapper">
+
+    <!-- 새로운 세션 생성 -->
+    <insert id="insertSession" parameterType="com.app.domain.session.entity.UserSession">
+        INSERT INTO user_session (
+            session_id, user_ip, user_agent, is_active
+        ) VALUES (
+                     #{sessionId}, #{userIp}, #{userAgent}, #{isActive}
+                 )
+    </insert>
+
+    <!-- 세션 ID로 세션 조회 -->
+    <select id="findBySessionId" resultType="com.app.domain.session.entity.UserSession">
+        SELECT
+            session_id as sessionId,
+            user_ip as userIp,
+            user_agent as userAgent,
+            created_at as createdAt,
+            last_accessed as lastAccessed,
+            is_active as isActive
+        FROM user_session
+        WHERE session_id = #{sessionId}
+    </select>
+
+    <!-- 세션 마지막 접근 시간은 MySQL의 ON UPDATE CURRENT_TIMESTAMP로 자동 갱신됨 -->
+    <!-- 하지만 명시적으로 업데이트하고 싶다면: -->
+    <update id="updateLastAccessed">
+        UPDATE user_session
+        SET user_ip = user_ip  -- 더미 업데이트로 last_accessed 자동 갱신 트리거
+        WHERE session_id = #{sessionId}
+    </update>
+
+    <!-- 세션 존재 여부 확인 -->
+    <select id="existsBySessionId" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM user_session
+        WHERE session_id = #{sessionId}
+          AND is_active = true
+    </select>
+
+    <!-- 세션 비활성화 -->
+    <update id="deactivateSession">
+        UPDATE user_session
+        SET is_active = false
+        WHERE session_id = #{sessionId}
+    </update>
+
+    <!-- 만료된 세션 정리 (24시간 이상 비활성) -->
+    <delete id="cleanupExpiredSessions">
+        DELETE FROM user_session
+        WHERE last_accessed < #{cutoffTime}
+        OR is_active = false
+    </delete>
+
+    <!-- 사용자 IP별 활성 세션 조회 -->
+    <select id="findActiveSessionsByUserIp" resultType="com.app.domain.session.entity.UserSession">
+        SELECT
+            session_id as sessionId,
+            user_ip as userIp,
+            user_agent as userAgent,
+            created_at as createdAt,
+            last_accessed as lastAccessed,
+            is_active as isActive
+        FROM user_session
+        WHERE user_ip = #{userIp}
+          AND is_active = true
+        ORDER BY last_accessed DESC
+    </select>
+
+</mapper>
