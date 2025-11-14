@@ -79,9 +79,13 @@ public class SessionService {
     /**
      * 세션 비활성화
      */
+    /**
+     * 세션 비활성화
+     */
     @Transactional
     public boolean deactivateSession(String sessionId) {
-        int result = sessionMapper.deactivateSession(sessionId);
+        // deactivateSession → invalidateSession으로 변경
+        int result = sessionMapper.invalidateSession(sessionId);
         log.info("세션 비활성화: sessionId={}, result={}", sessionId, result);
         return result > 0;
     }
@@ -91,8 +95,8 @@ public class SessionService {
      */
     @Transactional
     public int cleanupExpiredSessions() {
-        LocalDateTime cutoffTime = LocalDateTime.now().minusHours(24);
-        int cleaned = sessionMapper.cleanupExpiredSessions(cutoffTime);
+        // 매개변수 제거
+        int cleaned = sessionMapper.cleanupExpiredSessions();
         log.info("만료된 세션 정리 완료: {} 개", cleaned);
         return cleaned;
     }

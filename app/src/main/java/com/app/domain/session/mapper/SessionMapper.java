@@ -2,50 +2,44 @@ package com.app.domain.session.mapper;
 
 import com.app.domain.session.entity.UserSession;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
 public interface SessionMapper {
 
-
     /**
-     * 새로운 세션 생성
+     * 새로운 세션을 DB에 삽입
      */
-    int insertSession(UserSession userSession);
+    int insertSession(UserSession session);
 
     /**
      * 세션 ID로 세션 조회
      */
-    UserSession findBySessionId(@Param("sessionId") String sessionId);
+    UserSession findBySessionId(String sessionId);
 
     /**
-     * 세션 마지막 접근 시간 업데이트 (MySQL 자동 갱신 트리거용)
+     * 세션 마지막 접근 시간 업데이트
      */
-    int updateLastAccessed(@Param("sessionId") String sessionId);
+    int updateLastAccessed(String sessionId);
 
     /**
-     * 세션 비활성화
+     * 세션 무효화
      */
-    int deactivateSession(@Param("sessionId") String sessionId);
+    int invalidateSession(String sessionId);
 
     /**
-     * 만료된 세션 정리 (24시간 이상 비활성)
+     * 모든 활성 세션 조회
      */
-    int cleanupExpiredSessions(@Param("cutoffTime") LocalDateTime cutoffTime);
+    List<UserSession> findAllActiveSessions();
 
     /**
-     * 사용자 IP별 활성 세션 조회
+     * 만료된 세션들 제거
      */
-    List<UserSession> findActiveSessionsByUserIp(@Param("userIp") String userIp);
+    int cleanupExpiredSessions();
 
     /**
      * 세션 존재 여부 확인
      */
-    boolean existsBySessionId(@Param("sessionId") String sessionId);
-
-
-
-}//class
+    boolean existsBySessionId(String sessionId);
+}
