@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@MapperScan(basePackages = "com.app.domain.session.mapper")
+@MapperScan(basePackages = "com.app.domain.**.mapper")
 public class AppApplication {
 
 	public static void main(String[] args) {
