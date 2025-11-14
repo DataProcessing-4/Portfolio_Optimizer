@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.app.domain.stock.mapper.StockMapper">
+
+    <!-- Stock Entity ResultMap -->
+    <resultMap id="StockResultMap" type="com.app.domain.stock.entity.Stock">
+        <id property="ticker" column="ticker"/>
+        <result property="stockName" column="stock_name"/>
+        <result property="industry" column="industry"/>
+        <result property="accountingYear" column="accounting_year"/>
+        <result property="settlementMonth" column="settlement_month"/>
+
+        <result property="totalAssets" column="total_assets"/>
+        <result property="totalDebt" column="total_debt"/>
+        <result property="totalEquity" column="total_equity"/>
+        <result property="revenue" column="revenue"/>
+        <result property="operatingProfit" column="operating_profit"/>
+        <result property="netIncome" column="net_income"/>
+
+        <result property="eps" column="eps"/>
+        <result property="bps" column="bps"/>
+        <result property="sps" column="sps"/>
+        <result property="cfps" column="cfps"/>
+        <result property="ebitdaps" column="ebitdaps"/>
+
+        <result property="roe" column="roe"/>
+        <result property="debtRatio" column="debt_ratio"/>
+
+        <result property="referenceDate" column="reference_date"/>
+        <result property="closePrice" column="close_price"/>
+        <result property="marketCap" column="market_cap"/>
+        <result property="per" column="per"/>
+        <result property="pbr" column="pbr"/>
+
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 Select 컬럼 -->
+    <sql id="stockColumns">
+        ticker, stock_name, industry, accounting_year, settlement_month,
+        total_assets, total_debt, total_equity, revenue, operating_profit, net_income,
+        eps, bps, sps, cfps, ebitdaps,
+        roe, debt_ratio,
+        reference_date, close_price, market_cap, per, pbr,
+        created_at, updated_at
+    </sql>
+
+    <!-- 검색 조건 -->
+    <sql id="searchConditions">
+        <where>
+            <if test="searchDto.searchType == 'ticker' and searchDto.searchValue != null and searchDto.searchValue != ''">
+                AND ticker LIKE CONCAT('%', #{searchDto.searchValue}, '%')
+            </if>
+            <if test="searchDto.searchType == 'keyword' and searchDto.searchValue != null and searchDto.searchValue != ''">
+                AND (stock_name LIKE CONCAT('%', #{searchDto.searchValue}, '%')
+                OR ticker LIKE CONCAT('%', #{searchDto.searchValue}, '%'))
+            </if>
+            <if test="searchDto.industry != null and searchDto.industry != ''">
+                AND industry = #{searchDto.industry}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 정렬 조건 -->
+    <sql id="orderByClause">
+        ORDER BY
+        <choose>
+            <when test="searchDto.sortBy == 'stockName'">stock_name</when>
+            <when test="searchDto.sortBy == 'per'">per</when>
+            <when test="searchDto.sortBy == 'pbr'">pbr</when>
+            <when test="searchDto.sortBy == 'roe'">roe</when>
+            <when test="searchDto.sortBy == 'ticker'">ticker</when>
+            <when test="searchDto.sortBy == 'industry'">industry</when>
+            <otherwise>stock_name</otherwise>
+        </choose>
+        <choose>
+            <when test="searchDto.sortOrder == 'DESC'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- 전체 주식 목록 조회 -->
+    <select id="selectStockList" resultMap="StockResultMap" parameterType="com.app.domain.stock.dto.StockSearchDto">
+        SELECT
+        <include refid="stockColumns"/>
+        FROM stock
+        <include refid="searchConditions"/>
+        <include refid="orderByClause"/>
+        LIMIT #{searchDto.pageSize} OFFSET #{searchDto.offset}
+    </select>
+
+    <!-- 전체 주식 개수 조회 -->
+    <select id="countStockList" resultType="long" parameterType="com.app.domain.stock.dto.StockSearchDto">
+        SELECT COUNT(*)
+        FROM stock
+        <include refid="searchConditions"/>
+    </select>
+
+    <!-- 티커로 주식 상세 조회 -->
+    <select id="selectStockByTicker" resultMap="StockResultMap" parameterType="string">
+        SELECT
+        <include refid="stockColumns"/>
+        FROM stock
+        WHERE ticker = #{ticker}
+    </select>
+
+    <!-- 키워드로 주식 검색 -->
+    <select id="searchStockByKeyword" resultMap="StockResultMap" parameterType="com.app.domain.stock.dto.StockSearchDto">
+        SELECT
+        <include refid="stockColumns"/>
+        FROM stock
+        WHERE (stock_name LIKE CONCAT('%', #{searchDto.searchValue}, '%')
+        OR ticker LIKE CONCAT('%', #{searchDto.searchValue}, '%'))
+        <if test="searchDto.industry != null and searchDto.industry != ''">
+            AND industry = #{searchDto.industry}
+        </if>
+        <include refid="orderByClause"/>
+        LIMIT #{searchDto.pageSize} OFFSET #{searchDto.offset}
+    </select>
+
+    <!-- 키워드로 검색한 주식 개수 조회 -->
+    <select id="countStockByKeyword" resultType="long" parameterType="com.app.domain.stock.dto.StockSearchDto">
+        SELECT COUNT(*)
+        FROM stock
+        WHERE (stock_name LIKE CONCAT('%', #{searchDto.searchValue}, '%')
+        OR ticker LIKE CONCAT('%', #{searchDto.searchValue}, '%'))
+        <if test="searchDto.industry != null and searchDto.industry != ''">
+            AND industry = #{searchDto.industry}
+        </if>
+    </select>
+
+    <!-- 업종 목록 조회 -->
+    <select id="selectIndustryList" resultType="string">
+        SELECT DISTINCT industry
+        FROM stock
+        WHERE industry IS NOT NULL
+        ORDER BY industry
+    </select>
+
+    <!-- 업종별 주식 개수 조회 -->
+    <select id="countStockByIndustry" resultType="long" parameterType="string">
+        SELECT COUNT(*)
+        FROM stock
+        WHERE industry = #{industry}
+    </select>
+
+</mapper>
