@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.app.domain.correlation.mapper.CorrelationMapper">
+
+    <insert id="insertCorrelationAnalysis" parameterType="com.app.domain.correlation.entity.CorrelationAnalysis">
+        INSERT INTO correlation_analysis
+        (session_id, ticker1, ticker2, correlation_3m, correlation_6m, correlation_1y, analysis_date)
+        VALUES
+            (#{sessionId}, #{ticker1}, #{ticker2}, #{correlation3m}, #{correlation6m}, #{correlation1y}, #{analysisDate})
+    </insert>
+
+    <select id="findBySessionId" parameterType="string" resultType="com.app.domain.correlation.entity.CorrelationAnalysis">
+        SELECT * FROM correlation_analysis WHERE session_id = #{sessionId}
+    </select>
+
+    <select id="findHighCorrelations" resultType="com.app.domain.correlation.entity.CorrelationAnalysis">
+        SELECT * FROM correlation_analysis
+        WHERE session_id = #{sessionId} AND ABS(correlation_1y) >= #{threshold}
+    </select>
+
+    <select id="findSelectedTickers" parameterType="string" resultType="string">
+        SELECT ticker FROM user_selected_assets WHERE session_id = #{sessionId}
+    </select>
+
+    <delete id="deleteAnalysisResults" parameterType="string">
+        DELETE FROM correlation_analysis WHERE session_id = #{sessionId}
+    </delete>
+
+</mapper>
