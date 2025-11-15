@@ -23,6 +23,7 @@ public class ApiResponse {
     private LocalDateTime timestamp;
     private String errorCode;
 
+
     // 성공 응답 생성 (메시지와 데이터 포함)
     public static ApiResponse success(String message, Object data) {
         return ApiResponse.builder()
