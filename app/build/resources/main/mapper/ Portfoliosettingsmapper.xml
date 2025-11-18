@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.app.domain.portfolio.mapper.PortfolioSettingsMapper">
+
+    <!-- Result Map -->
+    <resultMap id="portfolioSettingsResultMap" type="com.app.domain.portfolio.entity.PortfolioSettings">
+        <id property="settingId" column="setting_id"/>
+        <result property="sessionId" column="session_id"/>
+        <result property="roeWeight" column="roe_weight"/>
+        <result property="pbrWeight" column="pbr_weight"/>
+        <result property="perWeight" column="per_weight"/>
+        <result property="topNCount" column="top_n_count"/>
+        <result property="minCorrelationThreshold" column="min_correlation_threshold"/>
+        <result property="maxDebtRatio" column="max_debt_ratio"/>
+        <result property="riskFreeRate" column="risk_free_rate"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 세션 ID로 설정 조회 -->
+    <select id="findBySessionId" resultMap="portfolioSettingsResultMap">
+        SELECT
+            setting_id,
+            session_id,
+            roe_weight,
+            pbr_weight,
+            per_weight,
+            top_n_count,
+            min_correlation_threshold,
+            max_debt_ratio,
+            risk_free_rate,
+            created_at,
+            updated_at
+        FROM portfolio_settings
+        WHERE session_id = #{sessionId}
+    </select>
+
+    <!-- 설정 ID로 조회 -->
+    <select id="findById" resultMap="portfolioSettingsResultMap">
+        SELECT
+            setting_id,
+            session_id,
+            roe_weight,
+            pbr_weight,
+            per_weight,
+            top_n_count,
+            min_correlation_threshold,
+            max_debt_ratio,
+            risk_free_rate,
+            created_at,
+            updated_at
+        FROM portfolio_settings
+        WHERE setting_id = #{settingId}
+    </select>
+
+    <!-- 새로운 설정 추가 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="settingId" keyColumn="setting_id">
+        INSERT INTO portfolio_settings (
+            session_id,
+            roe_weight,
+            pbr_weight,
+            per_weight,
+            top_n_count,
+            min_correlation_threshold,
+            max_debt_ratio,
+            risk_free_rate
+        ) VALUES (
+                     #{sessionId},
+                     #{roeWeight},
+                     #{pbrWeight},
+                     #{perWeight},
+                     #{topNCount},
+                     #{minCorrelationThreshold},
+                     #{maxDebtRatio},
+                     #{riskFreeRate}
+                 )
+    </insert>
+
+    <!-- 기존 설정 업데이트 -->
+    <update id="update">
+        UPDATE portfolio_settings
+        SET
+            roe_weight = #{roeWeight},
+            pbr_weight = #{pbrWeight},
+            per_weight = #{perWeight},
+            top_n_count = #{topNCount},
+            min_correlation_threshold = #{minCorrelationThreshold},
+            max_debt_ratio = #{maxDebtRatio},
+            risk_free_rate = #{riskFreeRate},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE setting_id = #{settingId}
+    </update>
+
+    <!-- 세션 ID로 설정 삭제 -->
+    <delete id="deleteBySessionId">
+        DELETE FROM portfolio_settings
+        WHERE session_id = #{sessionId}
+    </delete>
+
+</mapper>
