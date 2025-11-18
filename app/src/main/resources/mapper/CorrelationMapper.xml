@@ -3,18 +3,23 @@
 
 <mapper namespace="com.app.domain.correlation.mapper.CorrelationMapper">
 
-    <insert id="insertCorrelationAnalysis" parameterType="com.app.domain.correlation.entity.CorrelationAnalysis">
+    <!-- ============================================ -->
+    <!-- 기존 쿼리 (호환성 유지) -->
+    <!-- ============================================ -->
+
+    <insert id="insertCorrelationAnalysis" parameterType="com.app.domain.correlation.entity.CorrelationAnalysis"
+            useGeneratedKeys="true" keyProperty="correlationId">
         INSERT INTO correlation_analysis
         (session_id, ticker1, ticker2, correlation_3m, correlation_6m, correlation_1y, analysis_date)
         VALUES
             (#{sessionId}, #{ticker1}, #{ticker2}, #{correlation3m}, #{correlation6m}, #{correlation1y}, #{analysisDate})
     </insert>
 
-    <select id="findBySessionId" parameterType="string" resultType="com.app.domain.correlation.entity.CorrelationAnalysis">
+    <select id="findBySessionId" parameterType="string" resultMap="correlationAnalysisResultMap">
         SELECT * FROM correlation_analysis WHERE session_id = #{sessionId}
     </select>
 
-    <select id="findHighCorrelations" resultType="com.app.domain.correlation.entity.CorrelationAnalysis">
+    <select id="findHighCorrelations" resultMap="correlationAnalysisResultMap">
         SELECT * FROM correlation_analysis
         WHERE session_id = #{sessionId} AND ABS(correlation_1y) >= #{threshold}
     </select>
@@ -26,5 +31,132 @@
     <delete id="deleteAnalysisResults" parameterType="string">
         DELETE FROM correlation_analysis WHERE session_id = #{sessionId}
     </delete>
+
+    <!-- ============================================ -->
+    <!-- 분산 최적화용 쿼리 (신규) -->
+    <!-- ============================================ -->
+
+    <!-- 세션 ID로 상관관계 데이터 조회 -->
+    <select id="selectCorrelationsBySessionId" resultMap="correlationAnalysisResultMap">
+        SELECT
+            correlation_id,
+            session_id,
+            ticker1,
+            ticker2,
+            correlation_3m,
+            correlation_6m,
+            correlation_1y,
+            analysis_start_date,
+            analysis_end_date,
+            analysis_date,
+            created_at
+        FROM correlation_analysis
+        WHERE session_id = #{sessionId}
+        ORDER BY analysis_date DESC, ticker1, ticker2
+    </select>
+
+    <!-- 특정 티커들 간의 상관관계 조회 -->
+    <select id="selectCorrelationsByTickers" resultMap="correlationAnalysisResultMap">
+        SELECT
+        correlation_id,
+        session_id,
+        ticker1,
+        ticker2,
+        correlation_3m,
+        correlation_6m,
+        correlation_1y,
+        analysis_start_date,
+        analysis_end_date,
+        analysis_date,
+        created_at
+        FROM correlation_analysis
+        WHERE session_id = #{sessionId}
+        AND ticker1 IN
+        <foreach collection="tickers" item="ticker" open="(" separator="," close=")">
+            #{ticker}
+        </foreach>
+        AND ticker2 IN
+        <foreach collection="tickers" item="ticker" open="(" separator="," close=")">
+            #{ticker}
+        </foreach>
+        ORDER BY ticker1, ticker2
+    </select>
+
+    <!-- 특정 티커와 다른 티커들 간의 상관관계 조회 -->
+    <select id="selectCorrelationsByTicker" resultMap="correlationAnalysisResultMap">
+        SELECT
+            correlation_id,
+            session_id,
+            ticker1,
+            ticker2,
+            correlation_3m,
+            correlation_6m,
+            correlation_1y,
+            analysis_start_date,
+            analysis_end_date,
+            analysis_date,
+            created_at
+        FROM correlation_analysis
+        WHERE session_id = #{sessionId}
+          AND (ticker1 = #{ticker} OR ticker2 = #{ticker})
+        ORDER BY analysis_date DESC, ticker1, ticker2
+    </select>
+
+    <!-- 상관관계 데이터 삽입 -->
+    <insert id="insertCorrelation" parameterType="com.app.domain.correlation.entity.CorrelationAnalysis"
+            useGeneratedKeys="true" keyProperty="correlationId">
+        INSERT INTO correlation_analysis (
+            session_id,
+            ticker1,
+            ticker2,
+            correlation_3m,
+            correlation_6m,
+            correlation_1y,
+            analysis_start_date,
+            analysis_end_date,
+            analysis_date
+        ) VALUES (
+                     #{sessionId},
+                     #{ticker1},
+                     #{ticker2},
+                     #{correlation3m},
+                     #{correlation6m},
+                     #{correlation1y},
+                     #{analysisStartDate},
+                     #{analysisEndDate},
+                     #{analysisDate}
+                 )
+    </insert>
+
+    <!-- 상관관계 데이터 일괄 삽입 -->
+    <insert id="insertCorrelationsBatch">
+        INSERT INTO correlation_analysis (
+        session_id,
+        ticker1,
+        ticker2,
+        correlation_3m,
+        correlation_6m,
+        correlation_1y,
+        analysis_start_date,
+        analysis_end_date,
+        analysis_date
+        ) VALUES
+        <foreach collection="correlations" item="corr" separator=",">
+            (
+            #{corr.sessionId},
+            #{corr.ticker1},
+            #{corr.ticker2},
+            #{corr.correlation3m},
+            #{corr.correlation6m},
+            #{corr.correlation1y},
+            #{corr.analysisStartDate},
+            #{corr.analysisEndDate},
+            #{corr.analysisDate}
+            )
+        </foreach>
+    </insert>
+
+
+
 
 </mapper>

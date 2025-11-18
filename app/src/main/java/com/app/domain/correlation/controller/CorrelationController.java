@@ -1,9 +1,7 @@
 package com.app.domain.correlation.controller;
 
 import com.app.app.global.common.ApiResponse;
-import com.app.domain.correlation.dto.CorrelationAnalysisRequest;
-import com.app.domain.correlation.dto.CorrelationAnalysisResponse;
-import com.app.domain.correlation.dto.CorrelationHeatmapData;
+import com.app.domain.correlation.dto.*;
 import com.app.domain.correlation.service.CorrelationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -252,5 +250,65 @@ public class CorrelationController {
             ));
         }
     }
+
+    /**
+     * 분산 최적화 실행
+     *
+     * <p>기능:</p>
+     * <ul>
+     *   <li>높은 상관관계(0.7 이상) 종목 중복 제거</li>
+     *   <li>낮은 상관관계 종목 우선 선택</li>
+     *   <li>분산점수 계산 및 표시</li>
+     * </ul>
+     *
+     * @param request 분산 최적화 요청 (세션ID, 티커 목록, 임계값 등)
+     * @return 분산 최적화 결과 (선택된 종목, 제외된 종목, 분산점수 등)
+     */
+    @PostMapping("/diversification/optimize")
+    public ResponseEntity<DiversificationResponse> optimizeDiversification(
+            @Valid @RequestBody DiversificationRequest request) {
+
+        log.info("분산 최적화 요청 - sessionId: {}, tickers: {}, threshold: {}",
+                request.getSessionId(),
+                request.getTickers(),
+                request.getHighCorrelationThreshold());
+
+        try {
+            DiversificationResponse response = diversificationService.optimizeDiversification(request);
+
+            log.info("분산 최적화 완료 - 선택: {}개, 제외: {}개, 포트폴리오 분산점수: {:.2f}",
+                    response.getSelectedStocks().size(),
+                    response.getExcludedStocks().size(),
+                    response.getPortfolioDiversificationScore());
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalStateException e) {
+            log.error("분산 최적화 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+
+        } catch (Exception e) {
+            log.error("분산 최적화 중 오류 발생", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 분산 최적화 결과 조회
+     *
+     * @param sessionId 세션 ID
+     * @return 최근 분산 최적화 결과
+     */
+    @GetMapping("/diversification/{sessionId}")
+    public ResponseEntity<DiversificationResponse> getDiversificationResult(
+            @PathVariable String sessionId) {
+
+        log.info("분산 최적화 결과 조회 - sessionId: {}", sessionId);
+
+        // TODO: 결과 조회 로직 구현 (DB에서 저장된 결과 조회)
+        return ResponseEntity.ok().build();
+    }
+
+
 
 }//class
