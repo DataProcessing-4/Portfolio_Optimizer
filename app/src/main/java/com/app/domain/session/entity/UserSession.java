@@ -21,6 +21,33 @@ public class UserSession {
     private boolean isActive;      // is_active
 
 
+//    //---25.11.19 추가 필드---
+//    /**
+//     * 세션 만료 여부 확인
+//     * @param expirationHours 만료 시간 (시간 단위)
+//     * @return 만료 여부
+//     */
+//    public boolean isExpired(int expirationHours) {
+//        if (lastAccessed == null) {
+//            return true;
+//        }
+//        return lastAccessed.plusHours(expirationHours).isBefore(LocalDateTime.now());
+//    }
+//
+//    /**
+//     * 세션 활성화
+//     */
+//    public void activate() {
+//        this.isActive = true;
+//        this.lastAccessed = LocalDateTime.now();
+//    }
+//
+//    /**
+//     * 세션 비활성화
+//     */
+//    public void deactivate() {
+//        this.isActive = false;
+//    }
 
 
 

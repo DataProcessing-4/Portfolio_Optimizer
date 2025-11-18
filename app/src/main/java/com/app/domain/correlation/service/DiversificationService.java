@@ -1,19 +1,27 @@
 package com.app.domain.correlation.service;
 
-import com.app.domain.correlation.dto.DiversificationRequest;
-import com.app.domain.correlation.dto.DiversificationResponse;
+import com.app.domain.correlation.dto.*;
 import com.app.domain.correlation.entity.CorrelationAnalysis;
 import com.app.domain.correlation.mapper.CorrelationMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DiversificationService {
 
 
     private final CorrelationMapper correlationMapper;
+
 
     /**
      * 분산 최적화 실행
@@ -35,17 +43,36 @@ public class DiversificationService {
             throw new IllegalStateException("상관관계 데이터가 존재하지 않습니다. 먼저 상관관계 분석을 수행하세요.");
         }
 
+        // 🆕 1-1. 종목명 조회 (List<StockInfo>를 Map으로 변환)
+        List<CorrelationMapper.StockInfo> stockInfos =
+                correlationMapper.findStockInfosByTickers(request.getTickers());
+
+        Map<String, String> stockNames = stockInfos.stream()
+                .collect(Collectors.toMap(
+                        CorrelationMapper.StockInfo::getTicker,
+                        CorrelationMapper.StockInfo::getStockName
+                ));
+
+        log.info("종목명 조회 완료: {} 건", stockNames.size());
+
+//        List<DiversificationScore> allScores = calculateDiversificationScores(
+//                request.getTickers(),
+//                correlationMatrix,
+//                request.getHighCorrelationThreshold(),
+//                stockNames  // 🆕 종목명 Map 전달
+//        );
         // 2. 상관관계 매트릭스 생성
         Map<String, Map<String, Double>> correlationMatrix = buildCorrelationMatrix(
                 correlations,
                 request.getAnalysisPeriod()
         );
 
-        // 3. 각 종목의 분산 점수 계산
+        // 3. 각 종목의 분산 점수 계산 (종목명 포함)
         List<DiversificationScore> allScores = calculateDiversificationScores(
                 request.getTickers(),
                 correlationMatrix,
-                request.getHighCorrelationThreshold()
+                request.getHighCorrelationThreshold(),
+                stockNames  // 🆕 종목명 Map 전달
         );
 
         // 4. 최적 종목 선택 (그리디 알고리즘)
@@ -78,6 +105,8 @@ public class DiversificationService {
                         .map(DiversificationScore::getTicker)
                         .collect(Collectors.toList())
         );
+
+
 
         // 8. 응답 생성
         return DiversificationResponse.builder()
@@ -136,7 +165,8 @@ public class DiversificationService {
     private List<DiversificationScore> calculateDiversificationScores(
             List<String> tickers,
             Map<String, Map<String, Double>> correlationMatrix,
-            Double highCorrelationThreshold) {
+            Double highCorrelationThreshold,
+            Map<String, String> stockNames) {  // 🆕 파라미터 추가
 
         List<DiversificationScore> scores = new ArrayList<>();
 
@@ -163,8 +193,12 @@ public class DiversificationService {
             // 분산 점수 계산 (평균 상관계수가 낮을수록 높은 점수)
             double diversificationScore = 1.0 - Math.abs(avgCorrelation);
 
+            // 🆕 종목명 설정
+            String stockName = stockNames.getOrDefault(ticker, "알 수 없음");
+
             scores.add(DiversificationScore.builder()
                     .ticker(ticker)
+                    .stockName(stockName)  // 🆕 이 줄 추가!
                     .avgCorrelation(avgCorrelation)
                     .highCorrelationCount(highCorrelationCount)
                     .diversificationScore(diversificationScore)

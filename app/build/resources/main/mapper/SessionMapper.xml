@@ -14,6 +14,24 @@
         <result property="isActive" column="is_active"/>
     </resultMap>
 
+<!--    &lt;!&ndash; HTTP 세션 ID로 비즈니스 세션 ID 조회 &ndash;&gt;-->
+<!--    <select id="findBusinessSessionIdByHttpSessionId" resultType="string">-->
+<!--        SELECT session_id-->
+<!--        FROM user_session-->
+<!--        WHERE http_session_id = #{httpSessionId}-->
+<!--          AND is_active = TRUE-->
+<!--            LIMIT 1-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 비즈니스 세션 ID로 HTTP 세션 ID 조회 &ndash;&gt;-->
+<!--    <select id="findHttpSessionIdByBusinessSessionId" resultType="string">-->
+<!--        SELECT http_session_id-->
+<!--        FROM user_session-->
+<!--        WHERE session_id = #{businessSessionId}-->
+<!--          AND is_active = TRUE-->
+<!--            LIMIT 1-->
+<!--    </select>-->
+
     <!-- 세션 삽입 -->
     <insert id="insertSession" parameterType="com.app.domain.session.entity.UserSession">
         INSERT INTO user_session (

@@ -6,6 +6,7 @@ import com.app.domain.correlation.dto.CorrelationAnalysisResponse;
 import com.app.domain.correlation.dto.CorrelationHeatmapData;
 import com.app.domain.correlation.entity.CorrelationAnalysis;
 import com.app.domain.correlation.mapper.CorrelationMapper;
+import com.app.domain.session.mapper.SessionMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -530,6 +531,5 @@ public class CorrelationServiceImpl implements CorrelationService {
 
         return warnings;
     }
-
 
 }//class

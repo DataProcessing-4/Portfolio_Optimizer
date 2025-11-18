@@ -2,6 +2,7 @@ package com.app.domain.session.mapper;
 
 import com.app.domain.session.entity.UserSession;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -42,4 +43,23 @@ public interface SessionMapper {
      * 세션 존재 여부 확인
      */
     boolean existsBySessionId(String sessionId);
-}
+
+    //------25.11.19 추가------//
+//
+//    /**
+//     * HTTP 세션 ID로 비즈니스 세션 ID 조회
+//     * @param httpSessionId Spring Security가 생성한 HTTP 세션 ID (JSESSIONID)
+//     * @return 비즈니스 세션 ID (SES_xxx 형식)
+//     */
+//    String findBusinessSessionIdByHttpSessionId(@Param("httpSessionId") String httpSessionId);
+//
+//    /**
+//     * 비즈니스 세션 ID로 HTTP 세션 ID 조회
+//     * @param businessSessionId 비즈니스 세션 ID (SES_xxx)
+//     * @return HTTP 세션 ID
+//     */
+//    String findHttpSessionIdByBusinessSessionId(@Param("businessSessionId") String businessSessionId);
+
+
+
+}//interface
