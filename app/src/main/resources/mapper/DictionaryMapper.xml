@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    MyBatis XML Mapper 파일
+
+    역할: DictionaryMapper 인터페이스의 메서드에 대응하는 실제 SQL 작성
+
+    동작 원리:
+    1. namespace: 어떤 Mapper 인터페이스와 연결될지 지정
+    2. id: Mapper 인터페이스의 메서드 이름과 일치해야 함
+    3. resultMap/resultType: SQL 결과를 어떤 객체로 변환할지 지정
+-->
+<mapper namespace="com.app.domain.dictionary.mapper.DictionaryMapper">
+
+    <!--
+        ResultMap: SQL 결과(컬럼)를 Entity 객체(필드)로 매핑
+
+        왜 필요한가?
+        - DB 컬럼명: category_id (스네이크 케이스)
+        - Java 필드명: categoryId (카멜 케이스)
+        - 이름이 다르면 자동 매핑 안 되므로 명시적으로 지정
+    -->
+    <resultMap id="categoryResultMap" type="com.app.domain.dictionary.entity.StockTermCategory">
+        <id property="categoryId" column="category_id"/>          <!-- Primary Key -->
+        <result property="categoryName" column="category_name"/>
+        <result property="parentCategoryId" column="parent_category_id"/>
+        <result property="description" column="description"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="termResultMap" type="com.app.domain.dictionary.entity.StockTerm">
+        <id property="termId" column="term_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="termName" column="term_name"/>
+        <result property="termEnglish" column="term_english"/>
+        <result property="definition" column="definition"/>
+        <result property="detailedExplanation" column="detailed_explanation"/>
+        <result property="relatedTerms" column="related_terms"/>
+        <result property="exampleText" column="example_text"/>
+        <result property="imagePath" column="image_path"/>
+        <result property="referenceUrl" column="reference_url"/>
+        <result property="difficultyLevel" column="difficulty_level"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+
+    <!-- ============ 카테고리 조회 쿼리 ============ -->
+
+    <!--
+        모든 활성화된 카테고리 조회
+
+        실행 시점: mapper.findAllCategories() 호출 시
+        반환: List<StockTermCategory>
+    -->
+    <select id="findAllCategories" resultMap="categoryResultMap">
+        SELECT
+            category_id,
+            category_name,
+            parent_category_id,
+            description,
+            sort_order,
+            is_active,
+            created_at
+        FROM stock_term_category
+        WHERE is_active = true
+        ORDER BY sort_order ASC, category_name ASC
+    </select>
+
+    <!--
+        최상위 카테고리만 조회 (부모가 없는 것들)
+
+        사용 예: 대분류 카테고리 (분산투자, 팩터, 그래프)
+    -->
+    <select id="findRootCategories" resultMap="categoryResultMap">
+        SELECT
+            category_id,
+            category_name,
+            parent_category_id,
+            description,
+            sort_order,
+            is_active,
+            created_at
+        FROM stock_term_category
+        WHERE parent_category_id IS NULL
+          AND is_active = true
+        ORDER BY sort_order ASC
+    </select>
+
+    <!--
+        특정 부모의 하위 카테고리 조회
+
+        파라미터: parentId (부모 카테고리 ID)
+        사용 예: mapper.findChildCategories(1)
+                → 카테고리 1의 자식들 조회
+    -->
+    <select id="findChildCategories" resultMap="categoryResultMap">
+        SELECT
+            category_id,
+            category_name,
+            parent_category_id,
+            description,
+            sort_order,
+            is_active,
+            created_at
+        FROM stock_term_category
+        WHERE parent_category_id = #{parentId}
+          AND is_active = true
+        ORDER BY sort_order ASC
+    </select>
+
+    <!--
+        ID로 카테고리 조회
+    -->
+    <select id="findCategoryById" resultMap="categoryResultMap">
+        SELECT
+            category_id,
+            category_name,
+            parent_category_id,
+            description,
+            sort_order,
+            is_active,
+            created_at
+        FROM stock_term_category
+        WHERE category_id = #{categoryId}
+    </select>
+
+
+    <!-- ============ 용어 조회 쿼리 ============ -->
+
+    <!--
+        모든 활성화된 용어 조회
+    -->
+    <select id="findAllTerms" resultMap="termResultMap">
+        SELECT
+            term_id,
+            category_id,
+            term_name,
+            term_english,
+            definition,
+            detailed_explanation,
+            related_terms,
+            example_text,
+            image_path,
+            reference_url,
+            difficulty_level,
+            view_count,
+            is_active,
+            created_at,
+            updated_at
+        FROM stock_term
+        WHERE is_active = true
+        ORDER BY term_name ASC
+    </select>
+
+    <!--
+        특정 카테고리의 용어만 조회
+
+        파라미터: categoryId
+        사용 예: mapper.findTermsByCategory(1)
+                → "분산투자" 카테고리의 모든 용어
+    -->
+    <select id="findTermsByCategory" resultMap="termResultMap">
+        SELECT
+            term_id,
+            category_id,
+            term_name,
+            term_english,
+            definition,
+            detailed_explanation,
+            related_terms,
+            example_text,
+            image_path,
+            reference_url,
+            difficulty_level,
+            view_count,
+            is_active,
+            created_at,
+            updated_at
+        FROM stock_term
+        WHERE category_id = #{categoryId}
+          AND is_active = true
+        ORDER BY term_name ASC
+    </select>
+
+    <!--
+        용어 ID로 상세 정보 조회
+
+        파라미터: termId
+        사용 예: mapper.findTermById(5)
+                → ID 5인 용어의 모든 정보
+    -->
+    <select id="findTermById" resultMap="termResultMap">
+        SELECT
+            term_id,
+            category_id,
+            term_name,
+            term_english,
+            definition,
+            detailed_explanation,
+            related_terms,
+            example_text,
+            image_path,
+            reference_url,
+            difficulty_level,
+            view_count,
+            is_active,
+            created_at,
+            updated_at
+        FROM stock_term
+        WHERE term_id = #{termId}
+    </select>
+
+    <!--
+        용어 검색 (이름 또는 정의에서 키워드 검색)
+
+        파라미터: keyword
+        사용 예: mapper.searchTerms("포트폴리오")
+
+        LIKE 사용: %키워드% 형태로 부분 일치 검색
+        CONCAT: 문자열 합치기 ('%' + keyword + '%')
+    -->
+    <select id="searchTerms" resultMap="termResultMap">
+        SELECT
+        term_id,
+        category_id,
+        term_name,
+        term_english,
+        definition,
+        detailed_explanation,
+        related_terms,
+        example_text,
+        image_path,
+        reference_url,
+        difficulty_level,
+        view_count,
+        is_active,
+        created_at,
+        updated_at
+        FROM stock_term
+        WHERE is_active = true
+        AND (
+        term_name LIKE CONCAT('%', #{keyword}, '%')
+        OR term_english LIKE CONCAT('%', #{keyword}, '%')
+        OR definition LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY
+        CASE
+        WHEN term_name = #{keyword} THEN 0      <!-- 정확히 일치하면 우선 -->
+        WHEN term_name LIKE CONCAT(#{keyword}, '%') THEN 1  <!-- 시작하면 그 다음 -->
+        ELSE 2                                   <!-- 나머지는 마지막 -->
+        END,
+        term_name ASC
+    </select>
+
+    <!--
+        조회수 증가
+
+        파라미터: termId
+        사용 예: mapper.incrementViewCount(5)
+
+        UPDATE 쿼리: 데이터를 수정
+        view_count = view_count + 1: 현재 값에서 1 증가
+    -->
+    <update id="incrementViewCount">
+        UPDATE stock_term
+        SET view_count = view_count + 1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE term_id = #{termId}
+    </update>
+
+    <!--
+        인기 용어 조회 (조회수 기준 상위 N개)
+
+        파라미터: limit (조회할 개수)
+        사용 예: mapper.findPopularTerms(10)
+                → 가장 인기 있는 10개 용어
+    -->
+    <select id="findPopularTerms" resultMap="termResultMap">
+        SELECT
+            term_id,
+            category_id,
+            term_name,
+            term_english,
+            definition,
+            detailed_explanation,
+            related_terms,
+            example_text,
+            image_path,
+            reference_url,
+            difficulty_level,
+            view_count,
+            is_active,
+            created_at,
+            updated_at
+        FROM stock_term
+        WHERE is_active = true
+        ORDER BY view_count DESC, term_name ASC
+            LIMIT #{limit}
+    </select>
+
+</mapper>
