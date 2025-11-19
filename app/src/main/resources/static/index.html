@@ -3,449 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio Optimizer - 백엔드 연동</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --primary-blue: #0046FF;
-      --accent-blue: #73C8D2;
-      --bg-beige: #F5F1DC;
-      --highlight-orange: #FF9013;
-      --white: #FFFFFF;
-      --text-dark: #1A1A1A;
-      --text-gray: #6B6B6B;
-      --border-light: #E0DDD0;
-      --success: #27AE60;
-      --error: #E74C3C;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
-      background-color: var(--bg-beige);
-      color: var(--text-dark);
-      line-height: 1.6;
-    }
-
-    /* Header */
-    .header {
-      background-color: var(--white);
-      padding: 1.5rem 2rem;
-      box-shadow: 0 2px 8px rgba(0, 70, 255, 0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-content {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--primary-blue);
-    }
-
-    .nav {
-      display: flex;
-      gap: 2rem;
-    }
-
-    .nav-link {
-      color: var(--text-dark);
-      text-decoration: none;
-      font-weight: 500;
-      cursor: pointer;
-      transition: color 0.3s;
-      position: relative;
-    }
-
-    .nav-link:hover {
-      color: var(--primary-blue);
-    }
-
-    .nav-link.active::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background-color: var(--highlight-orange);
-      border-radius: 2px;
-    }
-
-    /* Container */
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    /* Section */
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    /* Card */
-    .card {
-      background-color: var(--white);
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0, 70, 255, 0.06);
-      margin-bottom: 1.5rem;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid var(--bg-beige);
-    }
-
-    .card-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
-
-    /* Button */
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 0.95rem;
-    }
-
-    .btn-primary {
-      background-color: var(--primary-blue);
-      color: var(--white);
-    }
-
-    .btn-primary:hover {
-      background-color: #0039CC;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 70, 255, 0.3);
-    }
-
-    .btn-secondary {
-      background-color: var(--accent-blue);
-      color: var(--white);
-    }
-
-    .btn-secondary:hover {
-      background-color: #5DB4C0;
-    }
-
-    .btn-outline {
-      background-color: transparent;
-      color: var(--primary-blue);
-      border: 2px solid var(--primary-blue);
-    }
-
-    .btn-outline:hover {
-      background-color: var(--primary-blue);
-      color: var(--white);
-    }
-
-    .btn-sm {
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* Form Controls */
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid var(--border-light);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: border-color 0.3s;
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary-blue);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1rem;
-    }
-
-    /* Weight Controls */
-    .weight-controls {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .weight-item {
-      background-color: var(--bg-beige);
-      padding: 1rem;
-      border-radius: 8px;
-    }
-
-    .weight-label {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--text-dark);
-    }
-
-    .weight-input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 2px solid var(--border-light);
-      border-radius: 6px;
-      font-size: 1rem;
-      text-align: center;
-    }
-
-    /* Table */
-    .table-container {
-      overflow-x: auto;
-    }
-
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .table thead {
-      background-color: var(--bg-beige);
-    }
-
-    .table th {
-      padding: 1rem;
-      text-align: left;
-      font-weight: 600;
-      color: var(--text-dark);
-      border-bottom: 2px solid var(--border-light);
-    }
-
-    .table td {
-      padding: 1rem;
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .table tbody tr:hover {
-      background-color: rgba(115, 200, 210, 0.05);
-    }
-
-    /* Stock Item */
-    .stock-symbol {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
-      color: var(--white);
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
-
-    /* Alert */
-    .alert {
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .alert-info {
-      background-color: rgba(115, 200, 210, 0.15);
-      border-left: 4px solid var(--accent-blue);
-      color: var(--text-dark);
-    }
-
-    .alert-success {
-      background-color: rgba(39, 174, 96, 0.15);
-      border-left: 4px solid var(--success);
-      color: var(--text-dark);
-    }
-
-    .alert-warning {
-      background-color: rgba(255, 144, 19, 0.15);
-      border-left: 4px solid var(--highlight-orange);
-      color: var(--text-dark);
-    }
-
-    .alert-error {
-      background-color: rgba(231, 76, 60, 0.15);
-      border-left: 4px solid var(--error);
-      color: var(--text-dark);
-    }
-
-    /* Loading Spinner */
-    .spinner {
-      border: 3px solid var(--bg-beige);
-      border-top: 3px solid var(--primary-blue);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 2rem auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Checkbox */
-    .checkbox-wrapper {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .checkbox {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
-
-    /* Badge */
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .badge-primary {
-      background-color: rgba(0, 70, 255, 0.15);
-      color: var(--primary-blue);
-    }
-
-    .badge-success {
-      background-color: rgba(39, 174, 96, 0.15);
-      color: var(--success);
-    }
-
-    .badge-orange {
-      background-color: rgba(255, 144, 19, 0.15);
-      color: var(--highlight-orange);
-    }
-
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
-      background: linear-gradient(135deg, var(--white) 0%, var(--bg-beige) 100%);
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 70, 255, 0.06);
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
-      color: var(--text-gray);
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--primary-blue);
-    }
-
-    /* Pagination */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-top: 2rem;
-    }
-
-    .page-btn {
-      padding: 0.5rem 1rem;
-      border: 2px solid var(--border-light);
-      background-color: var(--white);
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .page-btn:hover {
-      background-color: var(--primary-blue);
-      color: var(--white);
-      border-color: var(--primary-blue);
-    }
-
-    .page-btn.active {
-      background-color: var(--primary-blue);
-      color: var(--white);
-      border-color: var(--primary-blue);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .header-content {
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .nav {
-        gap: 1rem;
-      }
-
-      .weight-controls,
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  <title>Portfolio Optimizer</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<!-- Header -->
 <header class="header">
   <div class="header-content">
     <div class="logo">📊 Portfolio Optimizer</div>
@@ -458,16 +19,15 @@
   </div>
 </header>
 
-<!-- Main Container -->
 <div class="container">
-  <!-- Dashboard Section -->
+  <!-- Dashboard -->
   <section id="dashboard" class="section active">
     <div class="alert alert-info">
       <span>💡</span>
       <div>
         <strong>시스템 상태:</strong> 백엔드 API 연동 준비 완료
         <div style="margin-top: 0.25rem; font-size: 0.9rem;">
-          API 기본 URL: <code id="api-url">http://localhost:8080</code>
+          API 기본 URL: <code id="api-url">http://localhost:8282</code>
         </div>
       </div>
     </div>
@@ -493,14 +53,14 @@
       </div>
       <div class="form-group">
         <label class="form-label">API Base URL</label>
-        <input type="text" id="api-base-url" class="form-control" value="http://localhost:8282" placeholder="http://localhost:8282">
+        <input type="text" id="api-base-url" class="form-control" value="http://localhost:8282">
       </div>
       <button class="btn btn-primary" onclick="testConnection()">🔌 연결 테스트</button>
       <div id="connection-result" style="margin-top: 1rem;"></div>
     </div>
   </section>
 
-  <!-- Screening Section -->
+  <!-- Screening -->
   <section id="screening" class="section">
     <div class="card">
       <div class="card-header">
@@ -510,9 +70,7 @@
 
       <div class="alert alert-warning">
         <span>⚙️</span>
-        <div>
-          <strong>가중치 설정:</strong> PER, PBR, ROE의 합계는 100%가 되어야 합니다.
-        </div>
+        <div><strong>가중치 설정:</strong> PER, PBR, ROE의 합계는 100%가 되어야 합니다.</div>
       </div>
 
       <div class="weight-controls">
@@ -543,51 +101,36 @@
         <input type="number" id="max-debt-ratio" class="form-control" value="2.0" step="0.1" min="0">
       </div>
 
-      <button class="btn btn-primary" style="width: 100%;" onclick="performScreening()">
-        🔍 스크리닝 실행
-      </button>
-
+      <button class="btn btn-primary" style="width: 100%;" onclick="performScreening()">🔍 스크리닝 실행</button>
       <div id="screening-result" style="margin-top: 1.5rem;"></div>
     </div>
 
-    <!-- Screening Results -->
     <div class="card" id="screening-results-card" style="display: none;">
       <div class="card-header">
         <div class="card-title">스크리닝 결과</div>
-        <div>
-          <span class="badge badge-primary" id="result-count">0개 종목</span>
-        </div>
+        <div><span class="badge badge-primary" id="result-count">0개 종목</span></div>
       </div>
       <div class="table-container">
         <table class="table">
           <thead>
           <tr>
-            <th>순위</th>
-            <th>티커</th>
-            <th>종목명</th>
-            <th>업종</th>
-            <th>PER</th>
-            <th>PBR</th>
-            <th>ROE</th>
-            <th>종합점수</th>
-            <th>선별</th>
+            <th>순위</th><th>티커</th><th>종목명</th><th>업종</th>
+            <th>PER</th><th>PBR</th><th>ROE</th><th>종합점수</th><th>선별</th>
           </tr>
           </thead>
-          <tbody id="screening-results-body">
-          </tbody>
+          <tbody id="screening-results-body"></tbody>
         </table>
       </div>
       <div class="pagination" id="screening-pagination"></div>
     </div>
   </section>
 
-  <!-- Selection Section -->
+  <!-- Selection -->
   <section id="selection" class="section">
     <div class="card">
       <div class="card-header">
         <div class="card-title">주식 검색 및 선택</div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">검색 타입</label>
@@ -605,11 +148,9 @@
           <button class="btn btn-primary" style="width: 100%;" onclick="searchStocks()">🔍 검색</button>
         </div>
       </div>
-
       <div id="search-results"></div>
     </div>
 
-    <!-- Selected Assets -->
     <div class="card">
       <div class="card-header">
         <div class="card-title">선택한 종목 (5~10개)</div>
@@ -622,14 +163,8 @@
         <table class="table">
           <thead>
           <tr>
-            <th>순서</th>
-            <th>티커</th>
-            <th>종목명</th>
-            <th>업종</th>
-            <th>PER</th>
-            <th>PBR</th>
-            <th>ROE</th>
-            <th>액션</th>
+            <th>순서</th><th>티커</th><th>종목명</th><th>업종</th>
+            <th>PER</th><th>PBR</th><th>ROE</th><th>액션</th>
           </tr>
           </thead>
           <tbody id="selected-assets-body">
@@ -644,659 +179,49 @@
     </div>
   </section>
 
-  <!-- Correlation Section -->
+  <!-- Correlation -->
   <section id="correlation" class="section">
     <div class="card">
       <div class="card-header">
-        <div class="card-title">상관관계 분석</div>
+        <div class="card-title">상관관계 분석 & 히트맵</div>
         <button class="btn btn-primary btn-sm" onclick="performCorrelationAnalysis()">📊 분석 실행</button>
       </div>
-
       <div class="alert alert-info">
         <span>ℹ️</span>
-        <div>
-          선택한 종목들 간의 상관관계를 분석하여 포트폴리오 분산 효과를 평가합니다.
-          (3개월, 6개월, 1년 기간별 분석)
-        </div>
+        <div>선택한 종목들 간의 상관관계를 분석하고 히트맵으로 시각화합니다.</div>
       </div>
-
-      <div id="correlation-result"></div>
+      <div id="heatmap-result"></div>
     </div>
 
-    <!-- Correlation Matrix -->
-    <div class="card" id="correlation-matrix-card" style="display: none;">
+    <div class="card" id="heatmap-card" style="display: none;">
       <div class="card-header">
-        <div class="card-title">상관관계 행렬</div>
-        <div class="form-group" style="margin: 0; width: 200px;">
-          <select id="correlation-period" class="form-control" onchange="updateCorrelationMatrix()">
-            <option value="1Y">1년</option>
-            <option value="6M">6개월</option>
-            <option value="3M">3개월</option>
-          </select>
-        </div>
+        <div class="card-title">상관관계 히트맵</div>
       </div>
-      <div id="correlation-matrix"></div>
+      <div id="heatmap-display"></div>
     </div>
 
-    <!-- Diversification Guide -->
-    <div class="card" id="diversification-card" style="display: none;">
+    <div class="card">
       <div class="card-header">
-        <div class="card-title">분산투자 가이드</div>
+        <div class="card-title">분산투자 최적화</div>
+        <button class="btn btn-primary btn-sm" onclick="optimizeDiversification()">🎯 최적화 실행</button>
       </div>
-      <div id="diversification-guide"></div>
+      <div class="alert alert-info">
+        <span>ℹ️</span>
+        <div>높은 상관관계 종목을 제거하고 분산 효과가 우수한 포트폴리오를 구성합니다.</div>
+      </div>
+      <div id="optimization-result"></div>
+    </div>
+
+    <div class="card" id="optimization-display-card" style="display: none;">
+      <div class="card-header">
+        <div class="card-title">최적화 결과</div>
+      </div>
+      <div id="optimization-display"></div>
     </div>
   </section>
 </div>
 
-<script>
-  // ========================================
-  // Global Variables
-  // ========================================
-  let API_BASE_URL = 'http://localhost:8282';
-  let currentScreeningResults = [];
-  let currentCorrelationData = null;
-  let selectedAssets = [];
-
-  // ========================================
-  // Navigation
-  // ========================================
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', function() {
-      const sectionId = this.getAttribute('data-section');
-
-      // Update nav links
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      this.classList.add('active');
-
-      // Update sections
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(sectionId).classList.add('active');
-
-      // Load section data
-      if (sectionId === 'selection') {
-        loadSelectedAssets();
-      }
-    });
-  });
-
-  // ========================================
-  // API Functions
-  // ========================================
-  async function apiCall(endpoint, options = {}) {
-    const url = API_BASE_URL + endpoint;
-
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers
-        },
-        credentials: 'include' // 세션 쿠키 포함
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('API Call Error:', error);
-      throw error;
-    }
-  }
-
-  // ========================================
-  // Connection Test
-  // ========================================
-  async function testConnection() {
-    const urlInput = document.getElementById('api-base-url');
-    API_BASE_URL = urlInput.value.trim();
-
-    const resultDiv = document.getElementById('connection-result');
-    resultDiv.innerHTML = '<div class="spinner"></div>';
-
-    try {
-      // Test endpoint: 주식 목록 조회 (첫 페이지만)
-      const response = await apiCall('/api/stocks?page=1&pageSize=10');
-
-      resultDiv.innerHTML = `
-                    <div class="alert alert-success">
-                        <span>✅</span>
-                        <div>
-                            <strong>연결 성공!</strong><br>
-                            총 ${response.totalElements || 0}개의 종목 데이터 확인됨
-                        </div>
-                    </div>
-                `;
-
-      // Update dashboard stats
-      document.getElementById('total-stocks').textContent = response.totalElements || 0;
-      document.getElementById('api-url').textContent = API_BASE_URL;
-
-    } catch (error) {
-      resultDiv.innerHTML = `
-                    <div class="alert alert-error">
-                        <span>❌</span>
-                        <div>
-                            <strong>연결 실패</strong><br>
-                            ${error.message}
-                        </div>
-                    </div>
-                `;
-    }
-  }
-
-  // ========================================
-  // Weight Management
-  // ========================================
-  function updateWeights() {
-    const per = parseFloat(document.getElementById('per-weight').value) || 0;
-    const pbr = parseFloat(document.getElementById('pbr-weight').value) || 0;
-    const roe = parseFloat(document.getElementById('roe-weight').value) || 0;
-
-    const sum = per + pbr + roe;
-    const sumElement = document.getElementById('weight-sum');
-    sumElement.textContent = sum.toFixed(2) + '%';
-
-    // Color coding
-    if (Math.abs(sum - 100) < 0.01) {
-      sumElement.style.color = 'var(--success)';
-    } else {
-      sumElement.style.color = 'var(--error)';
-    }
-  }
-
-  function resetWeights() {
-    document.getElementById('per-weight').value = 33.33;
-    document.getElementById('pbr-weight').value = 33.33;
-    document.getElementById('roe-weight').value = 33.34;
-    updateWeights();
-  }
-
-  // ========================================
-  // Screening
-  // ========================================
-  async function performScreening() {
-    const per = parseFloat(document.getElementById('per-weight').value) / 100;
-    const pbr = parseFloat(document.getElementById('pbr-weight').value) / 100;
-    const roe = parseFloat(document.getElementById('roe-weight').value) / 100;
-    const maxDebtRatio = parseFloat(document.getElementById('max-debt-ratio').value);
-
-    // Validate weights
-    const sum = per + pbr + roe;
-    if (Math.abs(sum - 1.0) > 0.001) {
-      showAlert('screening-result', 'error', '가중치의 합이 100%가 되어야 합니다.');
-      return;
-    }
-
-    const resultDiv = document.getElementById('screening-result');
-    resultDiv.innerHTML = '<div class="spinner"></div>';
-
-    try {
-      const response = await apiCall('/api/screening/perform', {
-        method: 'POST',
-        body: JSON.stringify({
-          perWeight: per.toFixed(4),
-          pbrWeight: pbr.toFixed(4),
-          roeWeight: roe.toFixed(4),
-          maxDebtRatio: maxDebtRatio
-        })
-      });
-
-      currentScreeningResults = response.screeningResults || [];
-
-      resultDiv.innerHTML = `
-                    <div class="alert alert-success">
-                        <span>✅</span>
-                        <div>
-                            <strong>스크리닝 완료!</strong><br>
-                            총 ${response.totalStocksAnalyzed}개 분석, 상위 ${response.selectedStocksCount}개 선별
-                        </div>
-                    </div>
-                `;
-
-      // Show results table
-      displayScreeningResults(currentScreeningResults);
-      document.getElementById('screening-count').textContent = response.selectedStocksCount;
-
-    } catch (error) {
-      resultDiv.innerHTML = `
-                    <div class="alert alert-error">
-                        <span>❌</span>
-                        <div>
-                            <strong>스크리닝 실패</strong><br>
-                            ${error.message}
-                        </div>
-                    </div>
-                `;
-    }
-  }
-
-  function displayScreeningResults(results) {
-    const card = document.getElementById('screening-results-card');
-    const tbody = document.getElementById('screening-results-body');
-    const countBadge = document.getElementById('result-count');
-
-    card.style.display = 'block';
-    countBadge.textContent = `${results.length}개 종목`;
-
-    tbody.innerHTML = results.map(stock => `
-                <tr>
-                    <td><strong>${stock.ranking}</strong></td>
-                    <td><span class="stock-symbol">${stock.ticker}</span></td>
-                    <td>${stock.stockName}</td>
-                    <td>${stock.industry || '-'}</td>
-                    <td>${stock.per ? stock.per.toFixed(2) : '-'}</td>
-                    <td>${stock.pbr ? stock.pbr.toFixed(2) : '-'}</td>
-                    <td>${stock.roe ? stock.roe.toFixed(2) : '-'}%</td>
-                    <td><strong>${stock.compositeScore ? stock.compositeScore.toFixed(4) : '-'}</strong></td>
-                    <td>
-                        ${stock.isSelected ?
-            '<span class="badge badge-success">선별됨</span>' :
-            '<span class="badge">-</span>'}
-                    </td>
-                </tr>
-            `).join('');
-  }
-
-  // ========================================
-  // Stock Search
-  // ========================================
-  async function searchStocks() {
-    const searchType = document.getElementById('search-type').value;
-    const searchValue = document.getElementById('search-value').value.trim();
-
-    if (!searchValue) {
-      showAlert('search-results', 'warning', '검색어를 입력해주세요.');
-      return;
-    }
-
-    const resultDiv = document.getElementById('search-results');
-    resultDiv.innerHTML = '<div class="spinner"></div>';
-
-    try {
-      const response = await apiCall(
-              `/api/stocks/search?searchType=${searchType}&searchValue=${encodeURIComponent(searchValue)}&page=1&pageSize=30`
-      );
-
-      const stocks = response.content || [];
-
-      if (stocks.length === 0) {
-        resultDiv.innerHTML = `
-                        <div class="alert alert-info" style="margin-top: 1rem;">
-                            <span>ℹ️</span>
-                            <div>검색 결과가 없습니다.</div>
-                        </div>
-                    `;
-        return;
-      }
-
-      resultDiv.innerHTML = `
-                    <div class="card" style="margin-top: 1rem;">
-                        <div class="card-header">
-                            <div class="card-title">검색 결과</div>
-                            <span class="badge badge-primary">${stocks.length}개 종목</span>
-                        </div>
-                        <div class="table-container">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>선택</th>
-                                        <th>티커</th>
-                                        <th>종목명</th>
-                                        <th>업종</th>
-                                        <th>PER</th>
-                                        <th>PBR</th>
-                                        <th>ROE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${stocks.map(stock => `
-                                        <tr>
-                                            <td>
-                                                <button class="btn btn-outline btn-sm"
-                                                    onclick="selectAsset('${stock.ticker}')"
-                                                    ${selectedAssets.some(a => a.ticker === stock.ticker) ? 'disabled' : ''}>
-                                                    ${selectedAssets.some(a => a.ticker === stock.ticker) ? '✓ 선택됨' : '선택'}
-                                                </button>
-                                            </td>
-                                            <td><span class="stock-symbol">${stock.ticker}</span></td>
-                                            <td>${stock.stockName}</td>
-                                            <td>${stock.industry || '-'}</td>
-                                            <td>${stock.per ? stock.per.toFixed(2) : '-'}</td>
-                                            <td>${stock.pbr ? stock.pbr.toFixed(2) : '-'}</td>
-                                            <td>${stock.roe ? stock.roe.toFixed(2) : '-'}%</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-
-    } catch (error) {
-      resultDiv.innerHTML = `
-                    <div class="alert alert-error" style="margin-top: 1rem;">
-                        <span>❌</span>
-                        <div>검색 실패: ${error.message}</div>
-                    </div>
-                `;
-    }
-  }
-
-  // ========================================
-  // Asset Selection
-  // ========================================
-  async function selectAsset(ticker) {
-    if (selectedAssets.length >= 10) {
-      alert('최대 10개까지만 선택할 수 있습니다.');
-      return;
-    }
-
-    try {
-      const response = await apiCall('/api/stocks/select', {
-        method: 'POST',
-        body: JSON.stringify({ ticker: ticker })
-      });
-
-      if (response.success) {
-        await loadSelectedAssets();
-        searchStocks(); // Refresh search results
-      }
-
-    } catch (error) {
-      alert('자산 선택 실패: ' + error.message);
-    }
-  }
-
-  async function loadSelectedAssets() {
-    try {
-      const response = await apiCall('/api/stocks/selected');
-      selectedAssets = response.data || [];
-
-      const tbody = document.getElementById('selected-assets-body');
-      const countBadge = document.getElementById('selected-assets-count');
-
-      countBadge.textContent = `${selectedAssets.length}개 선택`;
-      document.getElementById('selected-count').textContent = selectedAssets.length;
-
-      if (selectedAssets.length === 0) {
-        tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8" style="text-align: center; color: var(--text-gray); padding: 2rem;">
-                                선택된 종목이 없습니다. 위에서 종목을 검색하여 선택해주세요.
-                            </td>
-                        </tr>
-                    `;
-      } else {
-        tbody.innerHTML = selectedAssets.map((asset, index) => `
-                        <tr>
-                            <td><strong>${index + 1}</strong></td>
-                            <td><span class="stock-symbol">${asset.ticker}</span></td>
-                            <td>${asset.stockName}</td>
-                            <td>${asset.industry || '-'}</td>
-                            <td>${asset.per ? asset.per.toFixed(2) : '-'}</td>
-                            <td>${asset.pbr ? asset.pbr.toFixed(2) : '-'}</td>
-                            <td>${asset.roe ? asset.roe.toFixed(2) : '-'}%</td>
-                            <td>
-                                <button class="btn btn-outline btn-sm" onclick="deselectAsset('${asset.ticker}')">
-                                    삭제
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-      }
-
-    } catch (error) {
-      console.error('Failed to load selected assets:', error);
-    }
-  }
-
-  async function deselectAsset(ticker) {
-    try {
-      await apiCall(`/api/stocks/deselect/${ticker}`, {
-        method: 'DELETE'
-      });
-      await loadSelectedAssets();
-
-    } catch (error) {
-      alert('자산 선택 해제 실패: ' + error.message);
-    }
-  }
-
-  async function clearSelectedAssets() {
-    if (!confirm('선택한 모든 종목을 초기화하시겠습니까?')) {
-      return;
-    }
-
-    try {
-      await apiCall('/api/stocks/clear', {
-        method: 'DELETE'
-      });
-      await loadSelectedAssets();
-
-    } catch (error) {
-      alert('초기화 실패: ' + error.message);
-    }
-  }
-
-  // ========================================
-  // Correlation Analysis
-  // ========================================
-  async function performCorrelationAnalysis() {
-    const resultDiv = document.getElementById('correlation-result');
-
-    if (selectedAssets.length < 2) {
-      resultDiv.innerHTML = `
-                    <div class="alert alert-warning">
-                        <span>⚠️</span>
-                        <div>상관관계 분석을 위해서는 최소 2개의 종목이 필요합니다.</div>
-                    </div>
-                `;
-      return;
-    }
-
-    resultDiv.innerHTML = '<div class="spinner"></div>';
-
-    try {
-      const tickers = selectedAssets.map(a => a.ticker);
-
-      const response = await apiCall('/api/correlation/analyze', {
-        method: 'POST',
-        body: JSON.stringify({
-          tickers: tickers,
-          period: 'ALL',
-          highCorrelationThreshold: 0.7
-        })
-      });
-
-      currentCorrelationData = response.data;
-
-      resultDiv.innerHTML = `
-                    <div class="alert alert-success">
-                        <span>✅</span>
-                        <div>
-                            <strong>분석 완료!</strong><br>
-                            ${response.data.correlations.length}개의 상관관계 쌍 분석됨
-                        </div>
-                    </div>
-                `;
-
-      // Display correlation matrix
-      displayCorrelationMatrix(response.data);
-      displayDiversificationGuide(response.data.diversificationGuide);
-
-    } catch (error) {
-      resultDiv.innerHTML = `
-                    <div class="alert alert-error">
-                        <span>❌</span>
-                        <div>분석 실패: ${error.message}</div>
-                    </div>
-                `;
-    }
-  }
-
-  function displayCorrelationMatrix(data) {
-    const card = document.getElementById('correlation-matrix-card');
-    const matrixDiv = document.getElementById('correlation-matrix');
-
-    card.style.display = 'block';
-
-    const period = document.getElementById('correlation-period').value;
-    const matrix = data.correlationMatrix[period];
-
-    if (!matrix || !matrix.tickers) {
-      matrixDiv.innerHTML = '<p>상관관계 매트릭스 데이터가 없습니다.</p>';
-      return;
-    }
-
-    const tickers = matrix.tickers;
-    const values = matrix.values;
-
-    let html = `
-                <div style="overflow-x: auto;">
-                    <table class="table" style="min-width: 600px;">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                ${tickers.map(t => `<th>${t}</th>`).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-    tickers.forEach((ticker1, i) => {
-      html += `<tr><td><strong>${ticker1}</strong></td>`;
-      tickers.forEach((ticker2, j) => {
-        const value = values[i][j];
-        const color = getCorrelationColor(value);
-        html += `<td style="background-color: ${color}; text-align: center;">
-                        ${value !== null ? value.toFixed(3) : '-'}
-                    </td>`;
-      });
-      html += '</tr>';
-    });
-
-    html += `
-                        </tbody>
-                    </table>
-                </div>
-                <div style="margin-top: 1rem; padding: 1rem; background-color: var(--bg-beige); border-radius: 8px;">
-                    <div style="font-size: 0.9rem; color: var(--text-gray);">
-                        <strong>범례:</strong>
-                        <span style="display: inline-block; width: 20px; height: 20px; background: #E74C3C; margin-left: 1rem;"></span> 높은 상관관계 (0.7~1.0)
-                        <span style="display: inline-block; width: 20px; height: 20px; background: #F39C12; margin-left: 0.5rem;"></span> 중간 상관관계 (0.3~0.7)
-                        <span style="display: inline-block; width: 20px; height: 20px; background: #27AE60; margin-left: 0.5rem;"></span> 낮은 상관관계 (0~0.3)
-                    </div>
-                </div>
-            `;
-
-    matrixDiv.innerHTML = html;
-  }
-
-  function displayDiversificationGuide(guide) {
-    const card = document.getElementById('diversification-card');
-    const guideDiv = document.getElementById('diversification-guide');
-
-    card.style.display = 'block';
-
-    const riskColors = {
-      'EXCELLENT': 'var(--success)',
-      'GOOD': 'var(--accent-blue)',
-      'FAIR': 'var(--highlight-orange)',
-      'POOR': 'var(--error)'
-    };
-
-    let html = `
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">분산점수</div>
-                        <div class="stat-value">${guide.overallDiversificationScore.toFixed(1)}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">위험도 평가</div>
-                        <div class="stat-value" style="color: ${riskColors[guide.riskAssessment]};">
-                            ${guide.riskAssessment}
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">높은 상관관계 쌍</div>
-                        <div class="stat-value">${guide.highlyCorrelatedPairCount}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">평균 상관계수</div>
-                        <div class="stat-value">${guide.averageCorrelation.toFixed(3)}</div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 1.5rem;">
-                    <h3 style="margin-bottom: 1rem;">💡 추천사항</h3>
-                    ${guide.recommendations.map(rec => `
-                        <div class="alert alert-info" style="margin-bottom: 0.5rem;">
-                            <span>•</span>
-                            <div>${rec}</div>
-                        </div>
-                    `).join('')}
-                </div>
-
-                ${guide.warnings && guide.warnings.length > 0 ? `
-                    <div style="margin-top: 1.5rem;">
-                        <h3 style="margin-bottom: 1rem;">⚠️ 경고사항</h3>
-                        ${guide.warnings.map(warn => `
-                            <div class="alert alert-warning" style="margin-bottom: 0.5rem;">
-                                <span>•</span>
-                                <div>${warn}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-            `;
-
-    guideDiv.innerHTML = html;
-  }
-
-  function updateCorrelationMatrix() {
-    if (currentCorrelationData) {
-      displayCorrelationMatrix(currentCorrelationData);
-    }
-  }
-
-  function getCorrelationColor(value) {
-    if (value === null) return '#f0f0f0';
-    const abs = Math.abs(value);
-    if (abs >= 0.7) return '#E74C3C';
-    if (abs >= 0.3) return '#F39C12';
-    return '#27AE60';
-  }
-
-  // ========================================
-  // Utility Functions
-  // ========================================
-  function showAlert(elementId, type, message) {
-    const element = document.getElementById(elementId);
-    const icons = {
-      success: '✅',
-      error: '❌',
-      warning: '⚠️',
-      info: 'ℹ️'
-    };
-
-    element.innerHTML = `
-                <div class="alert alert-${type}">
-                    <span>${icons[type] || 'ℹ️'}</span>
-                    <div>${message}</div>
-                </div>
-            `;
-  }
-
-  // ========================================
-  // Initialize
-  // ========================================
-  window.addEventListener('DOMContentLoaded', () => {
-    console.log('Portfolio Optimizer - Frontend Loaded');
-    updateWeights();
-  });
-</script>
+<script src="script.js"></script>
+<script>console.log('Portfolio Optimizer - Frontend Loaded');</script>
 </body>
 </html>
