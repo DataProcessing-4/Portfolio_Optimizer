@@ -337,17 +337,17 @@ WHERE close_price IS NOT NULL;
 */
 
 -- 기본 데이터 삽입 (주식 용어)
-INSERT INTO stock_term_category (category_name, description, sort_order) VALUES
-('분산투자', '포트폴리오 분산투자 관련 용어', 1),
-('팩터', '투자 팩터 및 지표 관련 용어', 2),
-('그래프', '차트 및 그래프 분석 관련 용어', 3),
-('위험관리', '투자 위험 관리 관련 용어', 4);
-
-INSERT INTO stock_term (category_id, term_name, term_english, definition, detailed_explanation) VALUES
-(1, '상관계수', 'Correlation Coefficient', '두 변수 간의 선형 관계의 강도를 나타내는 지표', '상관계수는 -1에서 1 사이의 값을 가지며, 1에 가까울수록 양의 상관관계를 의미합니다.'),
-(2, 'PER', 'Price to Earnings Ratio', '주가수익비율로 주가를 주당순이익으로 나눈 값', 'PER이 낮을수록 저평가된 주식으로 볼 수 있으나, 성장성도 함께 고려해야 합니다.'),
-(2, 'PBR', 'Price to Book Ratio', '주가순자산비율로 주가를 주당순자산가치로 나눈 값', 'PBR이 1보다 낮으면 장부가치보다 저평가된 상태를 의미합니다.'),
-(2, 'ROE', 'Return on Equity', '자기자본이익률로 당기순이익을 자기자본으로 나눈 값', 'ROE가 높을수록 자기자본을 효율적으로 활용하여 수익을 창출한다는 의미입니다.');
+# INSERT INTO stock_term_category (category_name, description, sort_order) VALUES
+# ('분산투자', '포트폴리오 분산투자 관련 용어', 1),
+# ('팩터', '투자 팩터 및 지표 관련 용어', 2),
+# ('그래프', '차트 및 그래프 분석 관련 용어', 3),
+# ('위험관리', '투자 위험 관리 관련 용어', 4);
+#
+# INSERT INTO stock_term (category_id, term_name, term_english, definition, detailed_explanation) VALUES
+# (1, '상관계수', 'Correlation Coefficient', '두 변수 간의 선형 관계의 강도를 나타내는 지표', '상관계수는 -1에서 1 사이의 값을 가지며, 1에 가까울수록 양의 상관관계를 의미합니다.'),
+# (2, 'PER', 'Price to Earnings Ratio', '주가수익비율로 주가를 주당순이익으로 나눈 값', 'PER이 낮을수록 저평가된 주식으로 볼 수 있으나, 성장성도 함께 고려해야 합니다.'),
+# (2, 'PBR', 'Price to Book Ratio', '주가순자산비율로 주가를 주당순자산가치로 나눈 값', 'PBR이 1보다 낮으면 장부가치보다 저평가된 상태를 의미합니다.'),
+# (2, 'ROE', 'Return on Equity', '자기자본이익률로 당기순이익을 자기자본으로 나눈 값', 'ROE가 높을수록 자기자본을 효율적으로 활용하여 수익을 창출한다는 의미입니다.');
 
 -- 완료 메시지
 SELECT 'Portfolio Analysis Database Created Successfully!' as status,

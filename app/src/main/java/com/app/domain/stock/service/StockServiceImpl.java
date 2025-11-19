@@ -7,6 +7,7 @@ import com.app.domain.stock.mapper.StockMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -180,6 +181,135 @@ public class StockServiceImpl implements StockService {
         }
     }
 
+    // ========== 재무지표 계산 기능 ==========
+
+    /**
+     * 모든 재무지표 계산 및 업데이트
+     * ROE, 부채비율, PER, PBR을 한번에 계산
+     */
+    @Override
+    @Transactional
+    public void calculateAllFinancialRatios() {
+        log.info("=== 재무지표 계산 시작 ===");
+
+        try {
+            // 계산 가능한 종목 수 확인
+            int calculatableCount = stockMapper.countCalculatableStocks();
+            log.info("계산 가능한 종목 수: {}", calculatableCount);
+
+            if (calculatableCount == 0) {
+                log.warn("계산 가능한 종목이 없습니다.");
+                return;
+            }
+
+            // 모든 재무지표 일괄 계산
+            int updatedCount = stockMapper.calculateAllRatios();
+            log.info("재무지표 업데이트 완료: {} 건", updatedCount);
+
+            // 결과 확인
+            validateCalculationResults();
+
+        } catch (Exception e) {
+            log.error("재무지표 계산 중 오류 발생", e);
+            throw new RuntimeException("재무지표 계산 실패", e);
+        }
+
+        log.info("=== 재무지표 계산 완료 ===");
+    }
+
+    /**
+     * ROE만 계산
+     */
+    @Override
+    @Transactional
+    public int calculateROE() {
+        log.info("ROE 계산 시작");
+        int count = stockMapper.updateROE();
+        log.info("ROE 계산 완료: {} 건", count);
+        return count;
+    }
+
+    /**
+     * 부채비율만 계산
+     */
+    @Override
+    @Transactional
+    public int calculateDebtRatio() {
+        log.info("부채비율 계산 시작");
+        int count = stockMapper.updateDebtRatio();
+        log.info("부채비율 계산 완료: {} 건", count);
+        return count;
+    }
+
+    /**
+     * PER만 계산
+     */
+    @Override
+    @Transactional
+    public int calculatePER() {
+        log.info("PER 계산 시작");
+        int count = stockMapper.updatePER();
+        log.info("PER 계산 완료: {} 건", count);
+        return count;
+    }
+
+    /**
+     * PBR만 계산
+     */
+    @Override
+    @Transactional
+    public int calculatePBR() {
+        log.info("PBR 계산 시작");
+        int count = stockMapper.updatePBR();
+        log.info("PBR 계산 완료: {} 건", count);
+        return count;
+    }
+
+    /**
+     * 특정 종목의 재무지표 계산
+     */
+    @Override
+    @Transactional
+    public void calculateRatiosForStock(String ticker) {
+        log.info("종목 {} 재무지표 계산 시작", ticker);
+        int count = stockMapper.calculateRatiosByTicker(ticker);
+        log.info("종목 {} 재무지표 계산 완료: {} 건", ticker, count);
+    }
+
+    /**
+     * 전체 종목 수
+     */
+    @Override
+    public int getTotalCount() {
+        return (int) stockMapper.countStockList(new StockSearchDto());
+    }
+
+    /**
+     * 계산 결과 검증
+     */
+    private void validateCalculationResults() {
+        // 간단한 통계 로깅
+        int totalCount = getTotalCount();
+        log.info("전체 종목 수: {}", totalCount);
+
+        // 샘플 데이터 조회로 결과 확인
+        StockSearchDto sampleDto = StockSearchDto.builder()
+                .page(1)
+                .pageSize(5)
+                .build();
+        List<Stock> samples = stockMapper.selectStockList(sampleDto);
+
+        log.info("=== 계산 결과 샘플 (상위 5개) ===");
+        for (Stock stock : samples) {
+            log.info("종목: {} | ROE: {} | PER: {} | PBR: {} | 부채비율: {}",
+                    stock.getStockName(),
+                    stock.getRoe(),
+                    stock.getPer(),
+                    stock.getPbr(),
+                    stock.getDebtRatio());
+        }
+    }
+
     /**
      * 검색 조건 유효성 검증 및 기본값 설정
      */
@@ -211,9 +341,6 @@ public class StockServiceImpl implements StockService {
                 searchDto.getPage(), searchDto.getPageSize(), searchDto.getOffset(),
                 searchDto.getSortBy(), searchDto.getSortOrder());
     }
-
-
-
 
 
 

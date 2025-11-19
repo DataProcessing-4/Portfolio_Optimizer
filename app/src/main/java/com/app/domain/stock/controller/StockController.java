@@ -9,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -131,6 +133,183 @@ public class StockController {
         return ResponseEntity.ok(count);
     }
 
+//    /**
+//     * 예외 처리
+//     */
+//    @ExceptionHandler(IllegalArgumentException.class)
+//    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e) {
+//        log.warn("잘못된 요청: {}", e.getMessage());
+//        return ResponseEntity.badRequest().body(e.getMessage());
+//    }
+//
+//    @ExceptionHandler(RuntimeException.class)
+//    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+//        log.error("서버 오류", e);
+//        return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다: " + e.getMessage());
+//    }
+
+
+    // ========== 재무지표 계산 API ==========
+
+    /**
+     * 모든 재무지표 계산 (ROE, PER, PBR, 부채비율)
+     * POST /api/stocks/calculate-ratios
+     */
+    @PostMapping("/calculate-ratios")
+    public ResponseEntity<Map<String, Object>> calculateAllRatios() {
+        log.info("재무지표 일괄 계산 요청");
+
+        try {
+            stockService.calculateAllFinancialRatios();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "재무지표 계산이 완료되었습니다.");
+            response.put("totalStocks", stockService.getTotalCount());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("재무지표 계산 실패", e);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "재무지표 계산 중 오류가 발생했습니다: " + e.getMessage());
+
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * ROE만 계산
+     * POST /api/stocks/calculate-roe
+     */
+    @PostMapping("/calculate-roe")
+    public ResponseEntity<Map<String, Object>> calculateROE() {
+        log.info("ROE 계산 요청");
+
+        try {
+            int count = stockService.calculateROE();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "ROE 계산 완료");
+            response.put("updatedCount", count);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("ROE 계산 실패", e);
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "message", e.getMessage())
+            );
+        }
+    }
+
+    /**
+     * 부채비율만 계산
+     * POST /api/stocks/calculate-debt-ratio
+     */
+    @PostMapping("/calculate-debt-ratio")
+    public ResponseEntity<Map<String, Object>> calculateDebtRatio() {
+        log.info("부채비율 계산 요청");
+
+        try {
+            int count = stockService.calculateDebtRatio();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "부채비율 계산 완료");
+            response.put("updatedCount", count);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("부채비율 계산 실패", e);
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "message", e.getMessage())
+            );
+        }
+    }
+
+    /**
+     * PER만 계산
+     * POST /api/stocks/calculate-per
+     */
+    @PostMapping("/calculate-per")
+    public ResponseEntity<Map<String, Object>> calculatePER() {
+        log.info("PER 계산 요청");
+
+        try {
+            int count = stockService.calculatePER();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "PER 계산 완료");
+            response.put("updatedCount", count);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("PER 계산 실패", e);
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "message", e.getMessage())
+            );
+        }
+    }
+
+    /**
+     * PBR만 계산
+     * POST /api/stocks/calculate-pbr
+     */
+    @PostMapping("/calculate-pbr")
+    public ResponseEntity<Map<String, Object>> calculatePBR() {
+        log.info("PBR 계산 요청");
+
+        try {
+            int count = stockService.calculatePBR();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "PBR 계산 완료");
+            response.put("updatedCount", count);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("PBR 계산 실패", e);
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "message", e.getMessage())
+            );
+        }
+    }
+
+    /**
+     * 특정 종목 재무지표 계산
+     * POST /api/stocks/{ticker}/calculate-ratios
+     */
+    @PostMapping("/{ticker}/calculate-ratios")
+    public ResponseEntity<Map<String, Object>> calculateRatiosForStock(@PathVariable String ticker) {
+        log.info("종목 {} 재무지표 계산 요청", ticker);
+
+        try {
+            stockService.calculateRatiosForStock(ticker);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "종목 " + ticker + " 재무지표 계산 완료");
+            response.put("ticker", ticker);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("종목 {} 재무지표 계산 실패", ticker, e);
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "message", e.getMessage())
+            );
+        }
+    }
+
     /**
      * 예외 처리
      */
@@ -145,9 +324,6 @@ public class StockController {
         log.error("서버 오류", e);
         return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다: " + e.getMessage());
     }
-
-
-
 
 
 

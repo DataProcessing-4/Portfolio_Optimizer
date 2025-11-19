@@ -46,7 +46,43 @@ public interface StockService {
     long getStockCountByIndustry(String industry);
 
 
+    // ========== 재무지표 계산 기능 ==========
 
+    /**
+     * 모든 재무지표 계산 및 업데이트
+     * ROE, 부채비율, PER, PBR을 한번에 계산
+     */
+    void calculateAllFinancialRatios();
+
+    /**
+     * ROE만 계산
+     */
+    int calculateROE();
+
+    /**
+     * 부채비율만 계산
+     */
+    int calculateDebtRatio();
+
+    /**
+     * PER만 계산
+     */
+    int calculatePER();
+
+    /**
+     * PBR만 계산
+     */
+    int calculatePBR();
+
+    /**
+     * 특정 종목의 재무지표 계산
+     */
+    void calculateRatiosForStock(String ticker);
+
+    /**
+     * 전체 종목 수
+     */
+    int getTotalCount();
 
 
 

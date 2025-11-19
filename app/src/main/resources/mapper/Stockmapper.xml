@@ -146,4 +146,113 @@
         WHERE industry = #{industry}
     </select>
 
+    <!-- ========== 재무지표 계산 쿼리 ========== -->
+
+    <!-- ROE 계산 및 업데이트 -->
+    <update id="updateROE">
+        UPDATE stock
+        SET roe = ROUND((net_income / NULLIF(total_equity, 0)) * 100, 4),
+            updated_at = NOW()
+        WHERE total_equity IS NOT NULL
+          AND total_equity != 0
+          AND net_income IS NOT NULL
+    </update>
+
+    <!-- 부채비율 계산 및 업데이트 -->
+    <update id="updateDebtRatio">
+        UPDATE stock
+        SET debt_ratio = ROUND((total_debt / NULLIF(total_equity, 0)) * 100, 4),
+            updated_at = NOW()
+        WHERE total_equity IS NOT NULL
+          AND total_equity != 0
+          AND total_debt IS NOT NULL
+    </update>
+
+    <!-- PER 계산 및 업데이트 -->
+    <update id="updatePER">
+        UPDATE stock
+        SET per = ROUND(close_price / NULLIF(eps, 0), 4),
+            updated_at = NOW()
+        WHERE eps IS NOT NULL
+          AND eps > 0
+          AND close_price IS NOT NULL
+          AND close_price > 0
+    </update>
+
+    <!-- PBR 계산 및 업데이트 -->
+    <update id="updatePBR">
+        UPDATE stock
+        SET pbr = ROUND(close_price / NULLIF(bps, 0), 4),
+            updated_at = NOW()
+        WHERE bps IS NOT NULL
+          AND bps > 0
+          AND close_price IS NOT NULL
+          AND close_price > 0
+    </update>
+
+    <!-- 모든 재무지표 일괄 계산 -->
+    <update id="calculateAllRatios">
+        UPDATE stock
+        SET
+            roe = CASE
+                      WHEN total_equity IS NOT NULL AND total_equity != 0 AND net_income IS NOT NULL
+            THEN ROUND((net_income / total_equity) * 100, 4)
+                ELSE roe
+        END,
+            debt_ratio = CASE
+                WHEN total_equity IS NOT NULL AND total_equity != 0 AND total_debt IS NOT NULL
+                THEN ROUND((total_debt / total_equity) * 100, 4)
+                ELSE debt_ratio
+        END,
+            per = CASE
+                WHEN eps IS NOT NULL AND eps > 0 AND close_price IS NOT NULL AND close_price > 0
+                THEN ROUND(close_price / eps, 4)
+                ELSE per
+        END,
+            pbr = CASE
+                WHEN bps IS NOT NULL AND bps > 0 AND close_price IS NOT NULL AND close_price > 0
+                THEN ROUND(close_price / bps, 4)
+                ELSE pbr
+        END,
+            updated_at = NOW()
+    </update>
+
+    <!-- 특정 종목의 재무지표 계산 -->
+    <update id="calculateRatiosByTicker">
+        UPDATE stock
+        SET
+            roe = CASE
+                      WHEN total_equity IS NOT NULL AND total_equity != 0 AND net_income IS NOT NULL
+            THEN ROUND((net_income / total_equity) * 100, 4)
+                ELSE roe
+        END,
+            debt_ratio = CASE
+                WHEN total_equity IS NOT NULL AND total_equity != 0 AND total_debt IS NOT NULL
+                THEN ROUND((total_debt / total_equity) * 100, 4)
+                ELSE debt_ratio
+        END,
+            per = CASE
+                WHEN eps IS NOT NULL AND eps > 0 AND close_price IS NOT NULL AND close_price > 0
+                THEN ROUND(close_price / eps, 4)
+                ELSE per
+        END,
+            pbr = CASE
+                WHEN bps IS NOT NULL AND bps > 0 AND close_price IS NOT NULL AND close_price > 0
+                THEN ROUND(close_price / bps, 4)
+                ELSE pbr
+        END,
+            updated_at = NOW()
+        WHERE ticker = #{ticker}
+    </update>
+
+    <!-- 재무지표 계산 가능한 종목 수 -->
+    <select id="countCalculatableStocks" resultType="int">
+        SELECT COUNT(*)
+        FROM stock
+        WHERE (total_equity IS NOT NULL AND total_equity != 0 AND net_income IS NOT NULL)
+           OR (total_equity IS NOT NULL AND total_equity != 0 AND total_debt IS NOT NULL)
+           OR (eps IS NOT NULL AND eps > 0 AND close_price IS NOT NULL)
+           OR (bps IS NOT NULL AND bps > 0 AND close_price IS NOT NULL)
+    </select>
+
 </mapper>

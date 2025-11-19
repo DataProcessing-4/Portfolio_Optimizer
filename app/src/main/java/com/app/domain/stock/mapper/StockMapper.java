@@ -45,5 +45,46 @@ public interface StockMapper {
      */
     long countStockByIndustry(@Param("industry") String industry);
 
+    // ========== 재무지표 계산 기능 ==========
+
+    /**
+     * ROE 계산 및 업데이트
+     * ROE = (당기순이익 / 자기자본) * 100
+     */
+    int updateROE();
+
+    /**
+     * 부채비율 계산 및 업데이트
+     * 부채비율 = (총부채 / 자기자본) * 100
+     */
+    int updateDebtRatio();
+
+    /**
+     * PER 계산 및 업데이트
+     * PER = 주가 / 주당순이익
+     */
+    int updatePER();
+
+    /**
+     * PBR 계산 및 업데이트
+     * PBR = 주가 / 주당순자산가치
+     */
+    int updatePBR();
+
+    /**
+     * 모든 재무지표 일괄 계산
+     */
+    int calculateAllRatios();
+
+    /**
+     * 특정 종목의 재무지표 계산
+     */
+    int calculateRatiosByTicker(@Param("ticker") String ticker);
+
+    /**
+     * 재무지표 계산 가능한 종목 수 조회
+     */
+    int countCalculatableStocks();
+
 
 }//interface
