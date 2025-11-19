@@ -4,7 +4,6 @@ import com.app.app.global.common.ApiResponse;
 import com.app.domain.session.dto.SessionDto;
 import com.app.domain.session.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

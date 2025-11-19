@@ -1,9 +1,13 @@
 package com.app.domain.stock.controller;
 
+import com.app.domain.stock.dto.AssetSelectionRequest;
+import com.app.domain.stock.dto.AssetSelectionResponse;
 import com.app.domain.stock.dto.PageResponseDto;
 import com.app.domain.stock.entity.Stock;
 import com.app.domain.stock.dto.StockSearchDto;
 import com.app.domain.stock.service.StockService;
+import com.app.domain.stock.service.UserSelectedAssetsService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +24,7 @@ import java.util.Map;
 public class StockController {
 
     private final StockService stockService;
+    private final UserSelectedAssetsService selectedAssetsService;
 
     /**
      * 주식 목록 조회 (페이지네이션)
@@ -326,6 +331,149 @@ public class StockController {
     }
 
 
+    // ========== 자산 선택 API ==========
 
+
+    /**
+     * 자산 선택
+     * POST /api/stocks/select
+     */
+    @PostMapping("/select")
+    public ResponseEntity<Map<String, Object>> selectAsset(
+            @RequestBody Map<String, String> request,
+            HttpSession session) {
+
+        String ticker = request.get("ticker");
+        String sessionId = session.getId();
+
+        log.info("자산 선택 요청 - 세션: {}, 티커: {}", sessionId, ticker);
+
+        try {
+            // 기존 서비스 메서드 사용
+            AssetSelectionRequest req = AssetSelectionRequest.builder()
+                    .ticker(ticker)
+                    .build();
+
+            selectedAssetsService.addSelectedAsset(sessionId, req);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "자산이 선택되었습니다.");
+            response.put("data", Map.of("ticker", ticker));
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("자산 선택 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+
+        } catch (IllegalStateException e) {
+            log.warn("자산 선택 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+
+        } catch (Exception e) {
+            log.error("자산 선택 중 오류 발생", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 선택된 자산 목록 조회
+     * GET /api/stocks/selected
+     */
+    @GetMapping("/selected")
+    public ResponseEntity<Map<String, Object>> getSelectedAssets(HttpSession session) {
+
+        String sessionId = session.getId();
+        log.info("선택된 자산 조회 - 세션: {}", sessionId);
+
+        try {
+            // 기존 서비스 메서드 사용
+            List<AssetSelectionResponse> selectedAssets = selectedAssetsService.getSelectedAssets(sessionId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "선택된 자산을 조회했습니다.");
+            response.put("data", selectedAssets);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("선택된 자산 조회 중 오류 발생", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 자산 선택 취소
+     * DELETE /api/stocks/deselect/{ticker}
+     */
+    @DeleteMapping("/deselect/{ticker}")
+    public ResponseEntity<Map<String, Object>> deselectAsset(
+            @PathVariable String ticker,
+            HttpSession session) {
+
+        String sessionId = session.getId();
+        log.info("자산 선택 취소 - 세션: {}, 티커: {}", sessionId, ticker);
+
+        try {
+            // 기존 서비스 메서드 사용 (removeSelectedAsset)
+            boolean success = selectedAssetsService.removeSelectedAsset(sessionId, ticker);
+
+            Map<String, Object> response = new HashMap<>();
+            if (success) {
+                response.put("success", true);
+                response.put("message", "자산 선택이 취소되었습니다.");
+                response.put("data", Map.of("ticker", ticker));
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "선택되지 않은 자산입니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (IllegalArgumentException e) {
+            log.warn("자산 선택 취소 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+
+        } catch (Exception e) {
+            log.error("자산 선택 취소 중 오류 발생", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 모든 자산 선택 초기화
+     * DELETE /api/stocks/clear
+     */
+    @DeleteMapping("/clear")
+    public ResponseEntity<Map<String, Object>> clearSelectedAssets(HttpSession session) {
+
+        String sessionId = session.getId();
+        log.info("모든 자산 선택 초기화 - 세션: {}", sessionId);
+
+        try {
+            // 기존 서비스 메서드 사용 (clearAllSelectedAssets)
+            boolean success = selectedAssetsService.clearAllSelectedAssets(sessionId);
+
+            // 성공 여부와 상관없이 현재 개수를 0으로 반환
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "모든 자산 선택이 초기화되었습니다.");
+            response.put("data", Map.of("deletedCount", success ? 1 : 0));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("자산 선택 초기화 중 오류 발생", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
+        }
+    }
 
 }//class

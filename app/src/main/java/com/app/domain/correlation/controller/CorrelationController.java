@@ -1,10 +1,10 @@
 package com.app.domain.correlation.controller;
 
 import com.app.app.global.common.ApiResponse;
+import com.app.app.global.util.SessionUtil;
 import com.app.domain.correlation.dto.*;
 import com.app.domain.correlation.service.CorrelationService;
 import com.app.domain.correlation.service.DiversificationService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,56 +27,8 @@ public class CorrelationController {
 
     private final CorrelationService correlationService;
     private final DiversificationService diversificationService;
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionUtil sessionUtil;  // 이것만 있으면 됨
 
-    // 세션 속성 키
-    private static final String BUSINESS_SESSION_KEY = "businessSessionId";
-
-    /**
-     * HTTP 세션에서 비즈니스 세션 ID 추출
-     * 없으면 생성하고 DB에도 저장
-     */
-    private String getBusinessSessionId(HttpSession httpSession) {
-        String businessSessionId = (String) httpSession.getAttribute(BUSINESS_SESSION_KEY);
-
-        if (businessSessionId == null) {
-            // 비즈니스 세션 ID 생성
-            businessSessionId = "SES_" + System.currentTimeMillis() + "_"
-                    + String.format("%06d", (int)(Math.random() * 1000000));
-
-            httpSession.setAttribute(BUSINESS_SESSION_KEY, businessSessionId);
-
-            // DB에 세션 정보 저장
-            saveSessionToDatabase(businessSessionId, httpSession);
-
-            log.info("새 비즈니스 세션 생성 및 DB 저장: {}", businessSessionId);
-        }
-
-        return businessSessionId;
-    }
-
-    /**
-     * user_session 테이블에 세션 저장
-     */
-    private void saveSessionToDatabase(String sessionId, HttpSession httpSession) {
-        try {
-            String sql = "INSERT INTO user_session (session_id, user_ip, user_agent, created_at, last_accessed, is_active) " +
-                    "VALUES (?, ?, ?, NOW(), NOW(), TRUE) " +
-                    "ON DUPLICATE KEY UPDATE last_accessed = NOW()";
-
-            // HTTP 세션에서 정보 추출 (없으면 기본값)
-            String userIp = "unknown";
-            String userAgent = "unknown";
-
-            jdbcTemplate.update(sql, sessionId, userIp, userAgent);
-
-            log.debug("세션 DB 저장 완료: {}", sessionId);
-
-        } catch (Exception e) {
-            log.error("세션 DB 저장 실패: {}", e.getMessage());
-            // 저장 실패해도 계속 진행 (중요하지 않음)
-        }
-    }
     /**
      * 상관관계 분석 수행
      */
@@ -85,7 +37,7 @@ public class CorrelationController {
             @Valid @RequestBody CorrelationAnalysisRequest request,
             HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId = sessionUtil.getBusinessSessionId(httpSession);
         log.info("상관관계 분석 요청 - 비즈니스 세션: {}, 종목수: {}", businessSessionId, request.getTickers().size());
 
         try {
@@ -117,7 +69,7 @@ public class CorrelationController {
     @PostMapping("/analyze-selected")
     public ResponseEntity<ApiResponse> analyzeSelectedAssets(HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId = sessionUtil.getBusinessSessionId(httpSession);
         log.info("선택된 자산 상관관계 분석 요청 - 비즈니스 세션: {}", businessSessionId);
 
         try {
@@ -149,7 +101,7 @@ public class CorrelationController {
     @GetMapping("/results")
     public ResponseEntity<ApiResponse> getAnalysisResults(HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId = sessionUtil.getBusinessSessionId(httpSession);
         log.info("상관관계 분석 결과 조회 - 비즈니스 세션: {}", businessSessionId);
 
         try {
@@ -177,7 +129,7 @@ public class CorrelationController {
             @RequestParam(required = false) List<String> tickers,
             HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId = sessionUtil.getBusinessSessionId(httpSession);
         log.info("히트맵 데이터 생성 요청 - 비즈니스 세션: {}", businessSessionId);
 
         try {
@@ -225,7 +177,7 @@ public class CorrelationController {
             @RequestParam(defaultValue = "0.7") Double threshold,
             HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId = sessionUtil.getBusinessSessionId(httpSession);
         log.info("높은 상관관계 종목 쌍 조회 - 비즈니스 세션: {}, 임계값: {}", businessSessionId, threshold);
 
         try {
@@ -255,7 +207,7 @@ public class CorrelationController {
             @RequestParam(defaultValue = "0.7") Double threshold,
             HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId = sessionUtil.getBusinessSessionId(httpSession);
         log.info("분산투자 가이드라인 조회 - 비즈니스 세션: {}, 임계값: {}", businessSessionId, threshold);
 
         try {
@@ -282,7 +234,7 @@ public class CorrelationController {
     @DeleteMapping("/results")
     public ResponseEntity<ApiResponse> deleteAnalysisResults(HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId = sessionUtil.getBusinessSessionId(httpSession);
         log.info("상관관계 분석 결과 삭제 - 비즈니스 세션: {}", businessSessionId);
 
         try {
@@ -320,7 +272,7 @@ public class CorrelationController {
             @Valid @RequestBody DiversificationRequest request,
             HttpSession httpSession) {
 
-        String businessSessionId = getBusinessSessionId(httpSession);
+        String businessSessionId =sessionUtil.getBusinessSessionId(httpSession);
 
         // Request에 비즈니스 세션 ID 설정
         request.setSessionId(businessSessionId);
@@ -365,7 +317,7 @@ public class CorrelationController {
         // PathVariable이 있으면 사용, 없으면 HTTP 세션에서 추출
         String businessSessionId = (sessionId != null && !sessionId.isEmpty())
                 ? sessionId
-                : getBusinessSessionId(httpSession);
+                : sessionUtil.getBusinessSessionId(httpSession);
 
         log.info("분산 최적화 결과 조회 - sessionId: {}", businessSessionId);
 
